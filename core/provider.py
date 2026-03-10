@@ -9,8 +9,11 @@ load_dotenv()
 class LLMProvider:
     def __init__(self):
         # Normalization mapping for March 2026
+        # Gemini 3.0 Pro was deprecated/shutdown March 9, 2026. Use 3.1.
         self.model_map = {
-            "gemini-1.5-pro": "gemini/gemini-3.1-pro",
+            "gemini-1.5-pro": "gemini/gemini-2.5-pro",
+            "gemini-3.1-pro": "gemini/gemini-3.1-pro-preview",
+            "gemini-3-pro": "gemini/gemini-3.1-pro-preview",
             "gemini-1.5-flash": "gemini/gemini-3.1-flash-lite-preview",
             "gpt-4o": "gpt-5.4-pro",
             "claude-3-5-sonnet": "claude-4-sonnet-20260217"
