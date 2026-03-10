@@ -67,19 +67,52 @@ fi
 # --- 6. Interactive API Setup ---
 echo ""
 if [ ! -f .env ]; then
-  echo "--> ${BLUE}Step 0.5: API Configuration${NC}"
-  read -p "Enter your preferred LLM Model (default: gpt-4o): " MODEL
-  MODEL=${MODEL:-gpt-4o}
+  echo "--> ${BLUE}Step 0.5: LLM Configuration${NC}"
+  echo "Select your preferred LLM provider:"
+  echo "  1) OpenAI (GPT-4o, GPT-3.5)"
+  echo "  2) Anthropic (Claude 3.5 Sonnet, Opus)"
+  echo "  3) Google (Gemini 1.5 Pro, Flash)"
+  echo "  4) Local (Ollama / vLLM)"
+  echo "  5) Custom / Other"
   
-  read -p "Enter your API Key (OpenAI, Anthropic, or Google): " KEY
+  read -p "Choice [1-5]: " CHOICE
   
+  case $CHOICE in
+    1)
+      MODEL="gpt-4o"
+      KEY_NAME="OPENAI_API_KEY"
+      ;;
+    2)
+      MODEL="claude-3-5-sonnet-20240620"
+      KEY_NAME="ANTHROPIC_API_KEY"
+      ;;
+    3)
+      MODEL="gemini/gemini-1.5-pro"
+      KEY_NAME="GOOGLE_API_KEY"
+      ;;
+    4)
+      MODEL="ollama/llama3"
+      KEY_NAME="NONE"
+      echo "Note: Ensure Ollama is running at http://localhost:11434"
+      ;;
+    5)
+      read -p "Enter model ID (e.g. gpt-4): " MODEL
+      read -p "Enter API key variable name (e.g. OPENAI_API_KEY): " KEY_NAME
+      ;;
+    *)
+      echo "${RED}Invalid choice. Defaulting to OpenAI.${NC}"
+      MODEL="gpt-4o"
+      KEY_NAME="OPENAI_API_KEY"
+      ;;
+  esac
+
   echo "AI_RMF_MODEL=$MODEL" > .env
-  # Simple logic to guess the key name
-  if echo "$MODEL" | grep -q "gpt"; then echo "OPENAI_API_KEY=$KEY" >> .env
-  elif echo "$MODEL" | grep -q "claude"; then echo "ANTHROPIC_API_KEY=$KEY" >> .env
-  elif echo "$MODEL" | grep -q "gemini"; then echo "GOOGLE_API_KEY=$KEY" >> .env
-  else echo "OPENAI_API_KEY=$KEY" >> .env
+  
+  if [ "$KEY_NAME" != "NONE" ]; then
+    read -p "Enter your $KEY_NAME: " API_KEY
+    echo "$KEY_NAME=$API_KEY" >> .env
   fi
+
   echo "${GREEN}--> .env file created successfully.${NC}"
 else
   echo "--> ${GREEN}.env file already exists.${NC}"
