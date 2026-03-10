@@ -7,14 +7,17 @@ import argparse
 from pathlib import Path
 
 # --- Auto-VirtualEnv Logic ---
-VENV_PYTHON = (Path(__file__).parent / ".venv" / "bin" / "python").resolve()
+BASE_DIR = Path(__file__).resolve().parent
+VENV_PYTHON = (BASE_DIR / ".venv" / "bin" / "python").resolve()
 CURRENT_PYTHON = Path(sys.executable).resolve()
 
 if VENV_PYTHON.exists() and CURRENT_PYTHON != VENV_PYTHON:
-    os.execv(str(VENV_PYTHON), [str(VENV_PYTHON)] + sys.argv)
+    # Optional: print(f"--> Switching to virtualenv: {VENV_PYTHON}")
+    os.environ["VIRTUAL_ENV"] = str(BASE_DIR / ".venv")
+    os.execv(str(VENV_PYTHON), [str(VENV_PYTHON), str(BASE_DIR / "ai-rmf")] + sys.argv[1:])
 
 # Add core directory to sys.path
-sys.path.append(str(Path(__file__).parent))
+sys.path.append(str(BASE_DIR))
 from core.provider import provider
 
 # --- Configuration ---
