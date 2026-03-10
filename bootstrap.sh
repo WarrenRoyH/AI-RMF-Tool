@@ -64,16 +64,34 @@ if [ "$SANDBOX" = "strict" ]; then
   fi
 fi
 
-# --- 6. Final Hand-off to Librarian ---
+# --- 6. Interactive API Setup ---
+echo ""
+if [ ! -f .env ]; then
+  echo "--> ${BLUE}Step 0.5: API Configuration${NC}"
+  read -p "Enter your preferred LLM Model (default: gpt-4o): " MODEL
+  MODEL=${MODEL:-gpt-4o}
+  
+  read -p "Enter your API Key (OpenAI, Anthropic, or Google): " KEY
+  
+  echo "AI_RMF_MODEL=$MODEL" > .env
+  # Simple logic to guess the key name
+  if echo "$MODEL" | grep -q "gpt"; then echo "OPENAI_API_KEY=$KEY" >> .env
+  elif echo "$MODEL" | grep -q "claude"; then echo "ANTHROPIC_API_KEY=$KEY" >> .env
+  elif echo "$MODEL" | grep -q "gemini"; then echo "GOOGLE_API_KEY=$KEY" >> .env
+  else echo "OPENAI_API_KEY=$KEY" >> .env
+  fi
+  echo "${GREEN}--> .env file created successfully.${NC}"
+else
+  echo "--> ${GREEN}.env file already exists.${NC}"
+fi
+
+# --- 7. Final Hand-off to Librarian ---
 echo ""
 echo "${GREEN}==============================================${NC}"
 echo "${GREEN}   AI-RMF WORKSPACE INITIALIZATION COMPLETE   ${NC}"
 echo "${GREEN}==============================================${NC}"
 echo ""
-echo "Flavor: ${BLUE}$FLAVOR${NC}"
-echo "Sandbox: ${BLUE}$SANDBOX${NC}"
-echo "Offline: ${BLUE}$OFFLINE${NC}"
+echo "To begin Phase 1 (Govern) immediately, run:"
+echo "  ${BLUE}./ai-rmf govern${NC}"
 echo ""
-echo "To begin Phase 1 (Govern), run:"
-echo "  ${BLUE}source .venv/bin/activate && ./ai-rmf govern${NC}"
-echo ""
+echo "Note: The script will automatically use the .venv created by uv."
