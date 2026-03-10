@@ -43,16 +43,22 @@ def run_govern():
     Launches an interactive interview with the Librarian using the provider layer.
     """
     check_setup()
+    print("\n" + "="*60)
     print("--> Phase 1: GOVERN (The Librarian)")
-    print("-" * 50)
+    print("="*60)
+    print("\nWelcome to the NIST AI RMF Governance Phase.")
+    print("I am the Librarian. My role is to help you map your project's context,")
+    print("inventory your AI-BOM, and define the safety policies that will")
+    print("configure the rest of our automated security agents.")
+    print("\nType 'exit' or 'done' to end the session at any time.")
+    print("-" * 60)
     
     with open(LIBRARIAN_PROMPT_PATH, 'r') as f:
         system_prompt = f.read()
 
-    print("The Librarian is ready for your NIST AI RMF interview.")
-    print("Type 'exit' or 'done' to end the session.")
-    
-    chat_history = []
+    # Proactively start the conversation
+    intro_query = "Hello. I am ready to begin the NIST AI RMF interview. Please introduce yourself and briefly describe the AI project we are governing today."
+    print(f"\nLibrarian: {intro_query}")
     
     while True:
         user_input = input("\nYou: ")
@@ -60,7 +66,7 @@ def run_govern():
             print("\nLibrarian: Ending session. Don't forget to save your manifest.")
             break
             
-        # Get response from the LLM (OpenAI, Anthropic, Gemini, etc.)
+        # Get response from the LLM
         response = provider.chat(system_prompt, user_input)
         print(f"\nLibrarian: {response}")
         
