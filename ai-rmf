@@ -6,71 +6,73 @@ import json
 import argparse
 from pathlib import Path
 
+# Add core directory to sys.path
+sys.path.append(str(Path(__file__).parent))
+from core.provider import provider
+
 # --- Configuration ---
 WORKSPACE_DIR = Path("workspace")
 MANIFEST_PATH = WORKSPACE_DIR / "project-manifest.json"
 LIBRARIAN_PROMPT_PATH = Path("librarian/prompt.md")
 
+def check_setup():
+    """
+    Ensures the workspace exists and API keys are configured.
+    """
+    if not WORKSPACE_DIR.exists():
+        print("Error: Workspace not found. Run 'bootstrap.sh' first.")
+        sys.exit(1)
+    
+    # Check for .env and API keys via the provider layer
+    provider.validate_setup()
+    print("--> API Configuration: [VERIFIED]")
+
 # --- Persona: Librarian (Govern) ---
 def run_govern():
     """
-    Launches the Librarian persona via Gemini CLI for an interactive interview.
-    In a real-world scenario, this would use the Gemini CLI 'ask' command with the prompt.
+    Launches an interactive interview with the Librarian using the provider layer.
     """
+    check_setup()
     print("--> Phase 1: GOVERN (The Librarian)")
-    print("--> Initializing NIST AI RMF 1.0 Interview...")
-    
-    if not LIBRARIAN_PROMPT_PATH.exists():
-        print(f"Error: Librarian prompt not found at {LIBRARIAN_PROMPT_PATH}")
-        sys.exit(1)
-
-    print("\n[Librarian Initialized]")
-    print("Goal: Generate your 'project-manifest.json' for NIST AI RMF compliance.")
     print("-" * 50)
     
-    # In this toolkit, we instruct the user to run the Gemini CLI command.
-    # We could also use subprocess to launch 'gemini ask' directly.
-    print(f"To start the interview, run this command in your Gemini CLI:")
-    print(f"  gemini ask --prompt-file {LIBRARIAN_PROMPT_PATH}")
-    print("-" * 50)
-    print("\nAfter the interview, please save the generated JSON to 'workspace/project-manifest.json'.")
+    with open(LIBRARIAN_PROMPT_PATH, 'r') as f:
+        system_prompt = f.read()
 
-# --- Persona: Adversary (Map) ---
-def run_map():
-    """
-    Launches the Adversary (garak) using the project-manifest.json for configuration.
-    """
-    print("--> Phase 2: MAP (The Adversary)")
-    if not MANIFEST_PATH.exists():
-        print(f"Error: Manifest not found at {MANIFEST_PATH}. Run 'govern' first.")
-        sys.exit(1)
+    print("The Librarian is ready for your NIST AI RMF interview.")
+    print("Type 'exit' or 'done' to end the session.")
     
-    with open(MANIFEST_PATH, 'r') as f:
-        manifest = json.load(f)
+    chat_history = []
     
-    # Extract risks for Garak
-    prohibited = manifest.get('safety_policy', {}).get('prohibited_content', [])
-    print(f"--> Targeting risks: {', '.join(prohibited)}")
-    
-    # Placeholder for actual Garak execution
-    print(f"--> Running Garak scan on model: {manifest['ai_bom']['model_id']}")
-    # Command: uv run garak --model_type openai --model_name {manifest['ai_bom']['model_id']}
+    while True:
+        user_input = input("\nYou: ")
+        if user_input.lower() in ["exit", "done", "quit"]:
+            print("\nLibrarian: Ending session. Don't forget to save your manifest.")
+            break
+            
+        # Get response from the LLM (OpenAI, Anthropic, Gemini, etc.)
+        response = provider.chat(system_prompt, user_input)
+        print(f"\nLibrarian: {response}")
+        
+        # If the Librarian outputs a JSON block, offer to save it
+        if "```json" in response:
+            try:
+                json_str = response.split("```json")[1].split("```")[0].strip()
+                manifest_data = json.loads(json_str)
+                with open(MANIFEST_PATH, 'w') as f:
+                    json.dump(manifest_data, f, indent=4)
+                print(f"\n[!] Project Manifest saved to {MANIFEST_PATH}")
+            except Exception as e:
+                print(f"\n[Error] Failed to auto-save manifest: {e}")
 
 # --- CLI Entry Point ---
 def main():
     parser = argparse.ArgumentParser(description="AI-RMF Lifecycle Tools (NIST 1.0)")
     subparsers = parser.add_subparsers(dest="command", help="AI-RMF Personas")
 
-    # Command: govern (Phase 1)
     subparsers.add_parser("govern", help="Phase 1: Govern (The Librarian)")
-
-    # Command: map (Phase 2)
     subparsers.add_parser("map", help="Phase 2: Map (The Adversary)")
-
-    # Command: manage (Phase 3)
     subparsers.add_parser("manage", help="Phase 3: Manage (The Sentry)")
-
-    # Command: measure (Phase 4)
     subparsers.add_parser("measure", help="Phase 4: Measure (The Auditor / Red Teamer)")
 
     args = parser.parse_args()
@@ -78,11 +80,8 @@ def main():
     if args.command == "govern":
         run_govern()
     elif args.command == "map":
-        run_map()
-    elif args.command == "manage":
-        print("--> Phase 3: MANAGE (The Sentry) - Coming Soon")
-    elif args.command == "measure":
-        print("--> Phase 4: MEASURE (The Auditor / Red Teamer) - Coming Soon")
+        # Adversary logic here
+        pass
     else:
         parser.print_help()
 
