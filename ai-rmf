@@ -1,99 +1,21 @@
-#!/usr/bin/env python3
+#!/bin/sh
 
-import os
-import sys
-import json
-import argparse
-from pathlib import Path
+# AI-RMF Lifecycle Launcher
+# Goal: Ensure the virtualenv is active before running the Python core.
 
-# --- Auto-VirtualEnv Logic ---
-BASE_DIR = Path(__file__).resolve().parent
-VENV_PYTHON = (BASE_DIR / ".venv" / "bin" / "python").resolve()
-CURRENT_PYTHON = Path(sys.executable).resolve()
+set -e
 
-if VENV_PYTHON.exists() and CURRENT_PYTHON != VENV_PYTHON:
-    # Optional: print(f"--> Switching to virtualenv: {VENV_PYTHON}")
-    os.environ["VIRTUAL_ENV"] = str(BASE_DIR / ".venv")
-    os.execv(str(VENV_PYTHON), [str(VENV_PYTHON), str(BASE_DIR / "ai-rmf")] + sys.argv[1:])
+# Get the directory where the script is located
+BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
+VENV_PATH="$BASE_DIR/.venv"
 
-# Add core directory to sys.path
-sys.path.append(str(BASE_DIR))
-from core.provider import provider
+if [ ! -d "$VENV_PATH" ]; then
+    echo "Error: Virtual environment not found at $VENV_PATH. Run './bootstrap.sh' first."
+    exit 1
+fi
 
-# --- Configuration ---
-WORKSPACE_DIR = Path("workspace")
-MANIFEST_PATH = WORKSPACE_DIR / "project-manifest.json"
-LIBRARIAN_PROMPT_PATH = Path("librarian/prompt.md")
+# Activate the venv and run the core script
+export VIRTUAL_ENV="$VENV_PATH"
+export PATH="$VENV_PATH/bin:$PATH"
 
-def check_setup():
-    """
-    Ensures the workspace exists and API keys are configured.
-    """
-    if not WORKSPACE_DIR.exists():
-        print("Error: Workspace not found. Run 'bootstrap.sh' first.")
-        sys.exit(1)
-    
-    # Check for .env and API keys via the provider layer
-    provider.validate_setup()
-    print("--> API Configuration: [VERIFIED]")
-
-# --- Persona: Librarian (Govern) ---
-def run_govern():
-    """
-    Launches an interactive interview with the Librarian using the provider layer.
-    """
-    check_setup()
-    print("--> Phase 1: GOVERN (The Librarian)")
-    print("-" * 50)
-    
-    with open(LIBRARIAN_PROMPT_PATH, 'r') as f:
-        system_prompt = f.read()
-
-    print("The Librarian is ready for your NIST AI RMF interview.")
-    print("Type 'exit' or 'done' to end the session.")
-    
-    chat_history = []
-    
-    while True:
-        user_input = input("\nYou: ")
-        if user_input.lower() in ["exit", "done", "quit"]:
-            print("\nLibrarian: Ending session. Don't forget to save your manifest.")
-            break
-            
-        # Get response from the LLM (OpenAI, Anthropic, Gemini, etc.)
-        response = provider.chat(system_prompt, user_input)
-        print(f"\nLibrarian: {response}")
-        
-        # If the Librarian outputs a JSON block, offer to save it
-        if "```json" in response:
-            try:
-                json_str = response.split("```json")[1].split("```")[0].strip()
-                manifest_data = json.loads(json_str)
-                with open(MANIFEST_PATH, 'w') as f:
-                    json.dump(manifest_data, f, indent=4)
-                print(f"\n[!] Project Manifest saved to {MANIFEST_PATH}")
-            except Exception as e:
-                print(f"\n[Error] Failed to auto-save manifest: {e}")
-
-# --- CLI Entry Point ---
-def main():
-    parser = argparse.ArgumentParser(description="AI-RMF Lifecycle Tools (NIST 1.0)")
-    subparsers = parser.add_subparsers(dest="command", help="AI-RMF Personas")
-
-    subparsers.add_parser("govern", help="Phase 1: Govern (The Librarian)")
-    subparsers.add_parser("map", help="Phase 2: Map (The Adversary)")
-    subparsers.add_parser("manage", help="Phase 3: Manage (The Sentry)")
-    subparsers.add_parser("measure", help="Phase 4: Measure (The Auditor / Red Teamer)")
-
-    args = parser.parse_args()
-
-    if args.command == "govern":
-        run_govern()
-    elif args.command == "map":
-        # Adversary logic here
-        pass
-    else:
-        parser.print_help()
-
-if __name__ == "__main__":
-    main()
+exec python3 "$BASE_DIR/ai_rmf_core.py" "$@"
