@@ -7,9 +7,10 @@ import argparse
 from pathlib import Path
 
 # --- Auto-VirtualEnv Logic ---
-# If we're not in the virtualenv and it exists, re-exec ourselves with it.
-VENV_PYTHON = Path(__file__).parent / ".venv" / "bin" / "python"
-if VENV_PYTHON.exists() and os.environ.get("VIRTUAL_ENV") is None:
+VENV_PYTHON = (Path(__file__).parent / ".venv" / "bin" / "python").resolve()
+CURRENT_PYTHON = Path(sys.executable).resolve()
+
+if VENV_PYTHON.exists() and CURRENT_PYTHON != VENV_PYTHON:
     os.execv(str(VENV_PYTHON), [str(VENV_PYTHON)] + sys.argv)
 
 # Add core directory to sys.path
