@@ -70,6 +70,10 @@ def run_govern():
 
         # Get response from the LLM (OpenAI, Anthropic, Gemini, etc.)
         response = provider.chat(messages)
+        if response is None:
+            print("\nLibrarian: [Error] No response from LLM. Please check your API connection.")
+            continue
+
         print(f"\nLibrarian: {response}")
 
         # Append Assistant Response to History
