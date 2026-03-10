@@ -1,0 +1,12 @@
+Implementation
+	Librarian (Govern)
+		Drafts policies, AI-BOM, and Transparency Notes
+	Adversary (Map / Manage)
+		Finds security holes before launch
+Continuous
+	Sentry (Manage)
+		Blocks malicious prompts and filters toxic outputs in real-time
+	Auditor (Measure)
+		Scans production logs for drift and generates compliance reports
+	Red Teamer (Measure)
+		Conducts monthly stress tests for bias and accuracy drift
