@@ -39,36 +39,41 @@ def check_setup():
 
 # --- Persona: Librarian (Govern) ---
 def run_govern():
-    """
-    Launches an interactive interview with the Librarian using the provider layer.
-    """
     check_setup()
     print("\n" + "="*60)
     print("--> Phase 1: GOVERN (The Librarian)")
     print("="*60)
     print("\nWelcome to the NIST AI RMF Governance Phase.")
-    print("I am the Librarian. My role is to help you map your project's context,")
-    print("inventory your AI-BOM, and define the safety policies that will")
-    print("configure the rest of our automated security agents.")
+    print("I am the Librarian. My role is to help you map your project's context.")
     print("\nType 'exit' or 'done' to end the session at any time.")
     print("-" * 60)
     
     with open(LIBRARIAN_PROMPT_PATH, 'r') as f:
         system_prompt = f.read()
 
-    # Proactively start the conversation
-    intro_query = "Hello. I am ready to begin the NIST AI RMF interview. Please introduce yourself and briefly describe the AI project we are governing today."
-    print(f"\nLibrarian: {intro_query}")
+    # Initialize messages with System Prompt
+    messages = [{"role": "system", "content": system_prompt}]
+
+    # Proactive Intro
+    intro = "Hello. I am the Librarian. Please describe your AI project and the model you are governing today."
+    print(f"\nLibrarian: {intro}")
+    messages.append({"role": "assistant", "content": intro})
     
     while True:
         user_input = input("\nYou: ")
         if user_input.lower() in ["exit", "done", "quit"]:
-            print("\nLibrarian: Ending session. Don't forget to save your manifest.")
+            print("\nLibrarian: Ending session.")
             break
             
-        # Get response from the LLM
-        response = provider.chat(system_prompt, user_input)
+        # Append User Input to History
+        messages.append({"role": "user", "content": user_input})
+
+        # Get response from the LLM (OpenAI, Anthropic, Gemini, etc.)
+        response = provider.chat(messages)
         print(f"\nLibrarian: {response}")
+
+        # Append Assistant Response to History
+        messages.append({"role": "assistant", "content": response})
         
         # If the Librarian outputs a JSON block, offer to save it
         if "```json" in response:
@@ -77,9 +82,9 @@ def run_govern():
                 manifest_data = json.loads(json_str)
                 with open(MANIFEST_PATH, 'w') as f:
                     json.dump(manifest_data, f, indent=4)
-                print(f"\n[!] Project Manifest saved to {MANIFEST_PATH}")
+                print(f"\n[!] Project Manifest automatically updated: {MANIFEST_PATH}")
             except Exception as e:
-                print(f"\n[Error] Failed to auto-save manifest: {e}")
+                pass
 
 # --- CLI Entry Point ---
 def main():
