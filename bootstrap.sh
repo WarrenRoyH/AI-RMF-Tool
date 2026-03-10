@@ -69,27 +69,28 @@ echo ""
 if [ ! -f .env ]; then
   echo "--> ${BLUE}Step 0.5: LLM Configuration${NC}"
   echo "Select your preferred LLM provider:"
-  echo "  1) OpenAI (GPT-4o, GPT-3.5)"
-  echo "  2) Anthropic (Claude 3.5 Sonnet, Opus)"
-  echo "  3) Google (Gemini 1.5 Pro, Flash)"
+  echo "  1) OpenAI (GPT-5.4 Pro, GPT-5 Nano)"
+  echo "  2) Anthropic (Claude 4.6 Sonnet, Haiku)"
+  echo "  3) Google (Gemini 3.1 Flash-Lite, 3.1 Pro)"
   echo "  4) Local (Ollama / vLLM)"
   echo "  5) Custom / Other"
-  
+
   read -p "Choice [1-5]: " CHOICE
-  
+
   case $CHOICE in
     1)
-      MODEL="gpt-4o"
+      MODEL="gpt-5.4-pro"
       KEY_NAME="OPENAI_API_KEY"
       ;;
     2)
-      MODEL="claude-3-5-sonnet-20240620"
+      MODEL="claude-4-sonnet-20260217"
       KEY_NAME="ANTHROPIC_API_KEY"
       ;;
     3)
-      MODEL="gemini/gemini-1.5-pro"
+      MODEL="gemini/gemini-3.1-flash-lite-preview"
       KEY_NAME="GOOGLE_API_KEY"
       ;;
+
     4)
       MODEL="ollama/llama3"
       KEY_NAME="NONE"
