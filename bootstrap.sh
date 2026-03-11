@@ -50,7 +50,7 @@ uv venv --python 3.11 .venv
 # --- 4. Install Core Dependencies ---
 echo "--> ${BLUE}Installing AI-RMF Open-Source Tools...${NC}"
 # Note: In a real repo, these would be in a requirements.txt
-uv pip install garak promptfoo arize-phoenix llm-guard litellm pydantic python-dotenv
+uv pip install garak promptfoo arize-phoenix llm-guard litellm pydantic python-dotenv questionary psutil
 
 # --- 5. Configure Sandbox (Context Only for now) ---
 if [ "$SANDBOX" = "strict" ]; then
