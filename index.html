@@ -7,12 +7,14 @@
     <style>
         :root {
             --primary: #2563eb;
+            --primary-light: #eff6ff;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --text: #1e293b;
             --text-muted: #64748b;
             --border: #e2e8f0;
             --success: #10b981;
+            --accent: #8b5cf6;
         }
 
         body {
@@ -29,7 +31,7 @@
 
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
             padding: 2rem;
         }
 
@@ -39,10 +41,12 @@
             border-radius: 12px;
             padding: 2.5rem;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            position: relative;
+            overflow: hidden;
         }
 
         h1 {
-            font-size: 1.875rem;
+            font-size: 2rem;
             margin-bottom: 0.5rem;
             color: var(--text);
         }
@@ -50,6 +54,117 @@
         p.subtitle {
             color: var(--text-muted);
             margin-bottom: 2rem;
+        }
+
+        /* Intro Screen Styles */
+        #intro {
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .lifecycle-viz {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 3rem 0;
+            position: relative;
+        }
+
+        .lifecycle-viz::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: var(--border);
+            z-index: 1;
+        }
+
+        .step {
+            position: relative;
+            z-index: 2;
+            background: var(--card-bg);
+            width: 80px;
+            text-align: center;
+        }
+
+        .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 0.5rem;
+            font-weight: bold;
+            border: 2px solid var(--primary);
+            transition: transform 0.3s;
+        }
+
+        .step:hover .icon-circle {
+            transform: scale(1.1);
+            background: var(--primary);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .persona-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+
+        .persona-item {
+            padding: 1rem;
+            border-radius: 8px;
+            background: #f1f5f9;
+            border-left: 4px solid var(--primary);
+        }
+
+        .persona-name {
+            font-weight: 700;
+            display: block;
+            font-size: 0.9rem;
+            color: var(--primary);
+        }
+
+        .persona-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .start-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Questionnaire Styles (from original) */
+        #questionnaire {
+            display: none;
         }
 
         .question {
@@ -70,8 +185,8 @@
         label {
             display: block;
             font-weight: 600;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
         }
 
         .options {
@@ -82,7 +197,7 @@
         .option {
             border: 2px solid var(--border);
             border-radius: 8px;
-            padding: 1rem;
+            padding: 1.25rem;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
@@ -91,22 +206,16 @@
 
         .option:hover {
             border-color: var(--primary);
-            background: #eff6ff;
-        }
-
-        .option.selected {
-            border-color: var(--primary);
-            background: #eff6ff;
-            box-shadow: 0 0 0 1px var(--primary);
+            background: var(--primary-light);
         }
 
         .option-title {
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 0.25rem;
         }
 
         .option-desc {
-            font-size: 0.875rem;
+            font-size: 0.9rem;
             color: var(--text-muted);
         }
 
@@ -164,6 +273,7 @@
             height: 8px;
             border-radius: 4px;
             margin-bottom: 2rem;
+            display: none;
         }
 
         progress::-webkit-progress-bar { background-color: var(--border); border-radius: 4px; }
@@ -174,73 +284,123 @@
 
 <div class="container">
     <div class="card">
-        <progress id="progress" value="25" max="100"></progress>
-        
-        <div id="q-container">
-            <!-- Question 1 -->
-            <div class="question active" id="q1">
-                <label>Where will the AI-RMF tools be deployed?</label>
-                <div class="options">
-                    <div class="option" onclick="select(1, 'local', 'Local Dev Laptop')">
-                        <span class="option-title">Local Dev Laptop</span>
-                        <span class="option-desc">Perfect for testing and personal project governance.</span>
-                    </div>
-                    <div class="option" onclick="select(1, 'cloud', 'Cloud / Hybrid')">
-                        <span class="option-title">Cloud / Hybrid</span>
-                        <span class="option-desc">Deploying to AWS, GCP, or a private VPC.</span>
-                    </div>
-                    <div class="option" onclick="select(1, 'prem', 'On-Premise (Air-gapped)')">
-                        <span class="option-title">On-Premise</span>
-                        <span class="option-desc">High-security, locked-down environment.</span>
-                    </div>
+        <!-- Intro Screen -->
+        <div id="intro">
+            <span class="badge" style="background: #e0e7ff; color: #3730a3;">NIST AI RMF 1.0</span>
+            <h1>AI-RMF Lifecycle Tools</h1>
+            <p class="subtitle">An automated, persona-driven toolkit for operationalizing AI risk management.</p>
+
+            <div class="lifecycle-viz">
+                <div class="step">
+                    <div class="icon-circle">1</div>
+                    <span class="step-label">Govern</span>
+                </div>
+                <div class="step">
+                    <div class="icon-circle">2</div>
+                    <span class="step-label">Map</span>
+                </div>
+                <div class="step">
+                    <div class="icon-circle">3</div>
+                    <span class="step-label">Manage</span>
+                </div>
+                <div class="step">
+                    <div class="icon-circle">4</div>
+                    <span class="step-label">Measure</span>
                 </div>
             </div>
 
-            <!-- Question 2 -->
-            <div class="question" id="q2">
-                <label>What is your security isolation requirement?</label>
-                <div class="options">
-                    <div class="option" onclick="select(2, 'standard', 'Standard')">
-                        <span class="option-title">Standard</span>
-                        <span class="option-desc">Regular user-level execution. No sandbox.</span>
-                    </div>
-                    <div class="option" onclick="select(2, 'strict', 'Strict Sandbox')">
-                        <span class="option-title">Strict Sandbox</span>
-                        <span class="option-desc">Jail the agents using Bubblewrap or sandbox-exec.</span>
-                    </div>
+            <div class="persona-grid">
+                <div class="persona-item">
+                    <span class="persona-name">The Librarian</span>
+                    <span class="persona-desc">Conducts NIST-aligned interviews to build your AI-BOM and policy.</span>
+                </div>
+                <div class="persona-item">
+                    <span class="persona-name">The Adversary</span>
+                    <span class="persona-desc">Probes your model for injections and safety bypasses.</span>
+                </div>
+                <div class="persona-item">
+                    <span class="persona-name">The Sentry</span>
+                    <span class="persona-desc">Deploys local, real-time firewalls to block PII and toxic output.</span>
+                </div>
+                <div class="persona-item">
+                    <span class="persona-name">The Auditor</span>
+                    <span class="persona-desc">Generates automated compliance reports and monitors drift.</span>
                 </div>
             </div>
 
-            <!-- Question 3 -->
-            <div class="question" id="q3">
-                <label>Does the environment have internet access?</label>
-                <div class="options">
-                    <div class="option" onclick="select(3, 'full', 'Full Access')">
-                        <span class="option-title">Full Access</span>
-                        <span class="option-desc">Can reach public APIs (OpenAI, Anthropic).</span>
-                    </div>
-                    <div class="option" onclick="select(3, 'none', 'No Access (Offline)')">
-                        <span class="option-title">No Access (Offline)</span>
-                        <span class="option-desc">Running local models only (Ollama, vLLM).</span>
-                    </div>
-                </div>
-            </div>
+            <button class="start-btn" onclick="startDeployment()">Start Deployment Wizard</button>
         </div>
 
-        <!-- Result -->
-        <div id="result" class="result">
-            <span class="badge" id="flavor-badge">Hybrid Config</span>
-            <h1>Your Deployment is Ready</h1>
-            <p class="subtitle">Copy the command below to initialize your AI-RMF workspace.</p>
+        <!-- Questionnaire -->
+        <div id="questionnaire">
+            <progress id="progress" value="25" max="100" style="display: block;"></progress>
             
-            <div class="command-box" id="command">
-                curl -sSL https://raw.githubusercontent.com/WarrenRoyH/AI-RMF-Tool/main/bootstrap.sh | sh -s -- --flavor cloud
+            <div id="q-container">
+                <!-- Question 1 -->
+                <div class="question active" id="q1">
+                    <label>Where will the tools be deployed?</label>
+                    <div class="options">
+                        <div class="option" onclick="select(1, 'local', 'Local Dev Laptop')">
+                            <span class="option-title">Local Dev Laptop</span>
+                            <span class="option-desc">Ideal for testing and individual project governance.</span>
+                        </div>
+                        <div class="option" onclick="select(1, 'cloud', 'Cloud / Hybrid')">
+                            <span class="option-title">Cloud / Hybrid</span>
+                            <span class="option-desc">AWS, GCP, Azure, or private cloud environments.</span>
+                        </div>
+                        <div class="option" onclick="select(1, 'prem', 'On-Premise')">
+                            <span class="option-title">On-Premise</span>
+                            <span class="option-desc">Air-gapped or high-security internal infrastructure.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="question" id="q2">
+                    <label>Security Isolation Requirement?</label>
+                    <div class="options">
+                        <div class="option" onclick="select(2, 'standard', 'Standard')">
+                            <span class="option-title">Standard Execution</span>
+                            <span class="option-desc">Runs directly in the user environment via <code>uv</code>.</span>
+                        </div>
+                        <div class="option" onclick="select(2, 'strict', 'Strict Sandbox')">
+                            <span class="option-title">Strict Isolation</span>
+                            <span class="option-desc">Forces all agents into <code>bwrap</code> or <code>sandbox-exec</code>.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="question" id="q3">
+                    <label>Internet Access Availability?</label>
+                    <div class="options">
+                        <div class="option" onclick="select(3, 'full', 'Full Access')">
+                            <span class="option-title">Connected</span>
+                            <span class="option-desc">Can reach external LLM APIs (OpenAI, Gemini).</span>
+                        </div>
+                        <div class="option" onclick="select(3, 'none', 'No Access (Offline)')">
+                            <span class="option-title">Offline Only</span>
+                            <span class="option-desc">Strictly uses local models (Ollama, vLLM).</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <button class="copy-btn" onclick="copyCommand()">Copy Command</button>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">
-                Requires no root/sudo. Powered by <code>uv</code>.
-            </p>
+            <!-- Result -->
+            <div id="result" class="result">
+                <span class="badge" id="flavor-badge">Hybrid Config</span>
+                <h1>Deployment Ready</h1>
+                <p class="subtitle">Run the command below to initialize your AI-RMF workspace.</p>
+                
+                <div class="command-box" id="command">
+                    curl -sSL https://raw.githubusercontent.com/WarrenRoyH/AI-RMF-Tool/main/bootstrap.sh | sh -s -- --flavor cloud
+                </div>
+
+                <button class="copy-btn" onclick="copyCommand()">Copy Command</button>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1.5rem;">
+                    Powered by <code>uv</code>. No <code>sudo</code> required.
+                </p>
+            </div>
         </div>
     </div>
 </div>
@@ -251,6 +411,11 @@
         security: '',
         network: ''
     };
+
+    function startDeployment() {
+        document.getElementById('intro').style.display = 'none';
+        document.getElementById('questionnaire').style.display = 'block';
+    }
 
     function select(step, value, label) {
         if (step === 1) state.infra = value;
@@ -263,7 +428,7 @@
         if (step < 3) {
             const next = document.getElementById(`q${step + 1}`);
             next.classList.add('active');
-            document.getElementById('progress').value = (step + 1) * 25;
+            document.getElementById('progress').value = (step + 1) * 33;
         } else {
             showResult();
         }
@@ -298,10 +463,11 @@
         const cmd = document.getElementById('command').innerText;
         navigator.clipboard.writeText(cmd);
         const btn = document.querySelector('.copy-btn');
-        btn.innerText = 'Copied!';
+        const originalText = btn.innerText;
+        btn.innerText = 'Copied to Clipboard!';
         btn.style.background = 'var(--success)';
         setTimeout(() => {
-            btn.innerText = 'Copy Command';
+            btn.innerText = originalText;
             btn.style.background = 'var(--primary)';
         }, 2000);
     }
