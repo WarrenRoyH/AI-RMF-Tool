@@ -92,10 +92,19 @@ def run_govern():
     # 2. AI-BOM
     print("\n" + "-"*30)
     print("STEP 2: AI BILL OF MATERIALS (AI-BOM)")
-    default_model = suggested_models[0] if suggested_models else "custom-model"
-    model_id = questionary.text("Model ID:", default=default_model).ask()
+    default_model = suggested_models[0] if suggested_models else "gpt-4o"
+    model_id = questionary.text("Model ID (e.g., gpt-4o, llama-3):", default=default_model).ask()
     model_version = questionary.text("Model Version (e.g., 1.0, latest):", default="latest").ask()
-    model_provider = questionary.text("Model Provider:", default="Local/Self-Hosted" if suggested_models else "OpenAI").ask()
+    
+    model_provider = questionary.select(
+        "Select Model Provider:",
+        choices=[
+            "OpenAI", "Anthropic", "Google (Gemini)", "Meta (Llama)", 
+            "Mistral", "Hugging Face", "Local (Ollama/vLLM)", "Other"
+        ]
+    ).ask()
+    if model_provider == "Other":
+        model_provider = questionary.text("Enter custom provider name:").ask()
 
     # 3. Risk Profile
     print("\n" + "-"*30)
@@ -103,34 +112,75 @@ def run_govern():
     risk_tier = questionary.select(
         "Select the Risk Tier for this project:",
         choices=[
-            Choice("Low (Internal tools, non-critical tasks)", "low"),
-            Choice("Medium (Customer-facing, non-sensitive)", "medium"),
-            Choice("High (Medical, Financial, Hiring, PII handling)", "high")
+            Choice("Low (Internal tools, productivity, non-critical)", "low"),
+            Choice("Medium (Customer-facing, informational, low-stakes)", "medium"),
+            Choice("High (Healthcare, Finance, Hiring, Legal, PII)", "high"),
+            Choice("Critical (Life-critical systems, autonomous infrastructure)", "critical")
         ]
     ).ask()
-    domain = questionary.text("Domain / Use-case (e.g., 'Customer Support', 'Medical Diagnosis'):", default=suggested_purpose).ask()
+    
+    domain = questionary.select(
+        "Select the Primary Domain / Use-case:",
+        choices=[
+            "General Chat / Interaction",
+            "Healthcare / Medical Advice",
+            "Financial Services / FinTech",
+            "Legal / Compliance",
+            "Software Development / Coding",
+            "Education / Academic",
+            "Customer Support",
+            "Human Resources / Hiring",
+            "Marketing / Content Generation",
+            "Other"
+        ]
+    ).ask()
+    if domain == "Other":
+        domain = questionary.text("Enter custom domain:").ask()
 
     # 4. Safety Policy
     print("\n" + "-"*30)
     print("STEP 4: SAFETY POLICY")
+    print("EXPLANATION: Select the specific domains where you want the Sentry to intercede.")
     prohibited_content = questionary.checkbox(
         "Select prohibited content domains (Press Space to select):",
         choices=[
             "Personal Identifiable Information (PII)",
-            "Medical Advice",
-            "Financial Advice",
-            "Toxic/Offensive Content",
-            "Proprietary Code/Data"
+            "Medical / Health Diagnosis",
+            "Financial / Investment Advice",
+            "Legal / Notary Advice",
+            "Hate Speech / Harassment",
+            "Self-Harm / Violence",
+            "Sexual / Explicit Content",
+            "Political Lobbying / Electioneering",
+            "Proprietary Code / Trade Secrets",
+            "Malware / Exploitation Instructions"
         ]
     ).ask()
-    pii_protection = questionary.confirm("Enable strict PII protection filters?").ask()
-    manual_review = questionary.confirm("Require manual human review for edge cases?").ask()
+    pii_protection = questionary.confirm("Enable strict PII protection (Anonymization)?", default=True).ask()
+    manual_review = questionary.confirm("Require manual human review for high-risk responses?", default=False).ask()
 
     # 5. Benchmarking
     print("\n" + "-"*30)
-    print("STEP 5: BENCHMARKING")
-    target_accuracy = questionary.text("Target Accuracy (e.g., 0.95):", default="0.90").ask()
-    bias_threshold = questionary.text("Bias/Variance Threshold (e.g., 0.05):", default="0.05").ask()
+    print("STEP 5: BENCHMARKING PRESETS")
+    benchmark_preset = questionary.select(
+        "Select a performance benchmark preset:",
+        choices=[
+            Choice("Balanced (90% Accuracy, 5% Bias)", "balanced"),
+            Choice("Enterprise Grade (95% Accuracy, 2% Bias)", "enterprise"),
+            Choice("High Precision (99% Accuracy, 1% Bias)", "precision"),
+            Choice("Custom Thresholds", "custom")
+        ]
+    ).ask()
+
+    if benchmark_preset == "balanced":
+        target_accuracy, bias_threshold = 0.90, 0.05
+    elif benchmark_preset == "enterprise":
+        target_accuracy, bias_threshold = 0.95, 0.02
+    elif benchmark_preset == "precision":
+        target_accuracy, bias_threshold = 0.99, 0.01
+    else:
+        target_accuracy = questionary.text("Target Accuracy (0.0 - 1.0):", default="0.90").ask()
+        bias_threshold = questionary.text("Bias/Variance Threshold (0.0 - 1.0):", default="0.05").ask()
 
     # Prepare data for Librarian
     draft_manifest = {
@@ -337,12 +387,38 @@ def run_measure():
     print("\nWelcome to the NIST AI RMF Measure Phase.")
     print("I am the Auditor. My role is to evaluate your system's performance and compliance.")
 
-    print("\n[!] PERFORMING COMPLIANCE AUDIT (LOCAL)...")
-    result = auditor.run_compliance_audit()
-    print(f"\n[SENTRY AUDIT]: {result}")
-    
-    if "audit_report.md" in result:
-        print("\nYou can now review the detailed NIST-aligned audit report in your workspace.")
+    while True:
+        action = questionary.select(
+            "\nMEASURE TOOLBOX: Select an assessment type:",
+            choices=[
+                Choice("Generate NIST Compliance Audit Report (from logs)", "audit"),
+                Choice("Run Automated Accuracy Benchmarking (Promptfoo)", "promptfoo"),
+                Choice("Run Automated Vulnerability Scanning (Garak)", "garak"),
+                Choice("Exit Measure phase", "exit")
+            ]
+        ).ask()
+
+        if action == "exit" or action is None:
+            break
+
+        if action == "audit":
+            print("\n[!] PERFORMING COMPLIANCE AUDIT (LOCAL)...")
+            result = auditor.run_compliance_audit()
+            print(f"\n[SENTRY AUDIT]: {result}")
+        
+        elif action == "promptfoo":
+            cmd = auditor.generate_promptfoo_config()
+            print(f"\n[!] Triggering Accuracy Benchmark...")
+            print(f"--> Executing: {cmd}")
+            os.system(cmd)
+            
+        elif action == "garak":
+            cmd = auditor.generate_garak_command()
+            print(f"\n[!] Triggering Vulnerability Scan...")
+            print(f"--> Executing: {cmd}")
+            os.system(cmd)
+
+    print("\nAuditor: Measurement session concluded.")
 
 # --- Persona: Inspector (Observe) ---
 def run_observe():
