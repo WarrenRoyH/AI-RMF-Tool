@@ -7,6 +7,7 @@
     <style>
         :root {
             --primary: #2563eb;
+            --primary-dark: #1e40af;
             --primary-light: #eff6ff;
             --bg: #f8fafc;
             --card-bg: #ffffff;
@@ -14,6 +15,7 @@
             --text-muted: #64748b;
             --border: #e2e8f0;
             --success: #10b981;
+            --warning: #f59e0b;
             --accent: #8b5cf6;
         }
 
@@ -31,356 +33,291 @@
 
         .container {
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
             padding: 2rem;
         }
 
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 2.5rem;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
             position: relative;
             overflow: hidden;
         }
 
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            color: var(--text);
-        }
+        h1 { font-size: 2.25rem; margin-bottom: 0.5rem; text-align: center; }
+        p.subtitle { color: var(--text-muted); text-align: center; margin-bottom: 3rem; font-size: 1.1rem; }
 
-        p.subtitle {
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-        }
-
-        /* Intro Screen Styles */
-        #intro {
-            text-align: center;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        .lifecycle-viz {
+        /* Enhanced Flow Visualization */
+        .flow-viz {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin: 3rem 0;
+            align-items: flex-start;
+            margin: 4rem 0;
             position: relative;
+            padding: 0 20px;
         }
 
-        .lifecycle-viz::before {
+        .flow-viz::before {
             content: '';
             position: absolute;
-            top: 50%;
-            left: 10%;
-            right: 10%;
-            height: 2px;
-            background: var(--border);
+            top: 40px;
+            left: 50px;
+            right: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--success));
             z-index: 1;
         }
 
-        .step {
+        .flow-node {
             position: relative;
             z-index: 2;
-            background: var(--card-bg);
-            width: 80px;
+            width: 140px;
             text-align: center;
         }
 
-        .icon-circle {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--primary-light);
-            color: var(--primary);
+        .node-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: var(--card-bg);
+            border: 3px solid var(--primary);
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 0 auto 0.5rem;
-            font-weight: bold;
-            border: 2px solid var(--primary);
-            transition: transform 0.3s;
+            margin: 0 auto 1rem;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .step:hover .icon-circle {
-            transform: scale(1.1);
+        .flow-node:hover .node-icon {
+            transform: translateY(-5px) rotate(5deg);
             background: var(--primary);
             color: white;
+            border-color: var(--primary-dark);
         }
 
-        .step-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-muted);
-        }
+        .node-label { font-weight: 800; display: block; margin-bottom: 0.25rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .node-persona { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
 
-        .persona-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            text-align: left;
-            margin-bottom: 2rem;
-        }
-
-        .persona-item {
-            padding: 1rem;
-            border-radius: 8px;
+        /* Sentry Options Section */
+        .sentry-options {
             background: #f1f5f9;
-            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 3rem 0;
+            border: 1px solid var(--border);
         }
 
-        .persona-name {
-            font-weight: 700;
-            display: block;
-            font-size: 0.9rem;
-            color: var(--primary);
+        .sentry-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
 
-        .persona-desc {
+        .sentry-title { font-weight: 800; font-size: 1.25rem; color: var(--primary); }
+
+        .deployment-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .deploy-card {
+            background: white;
+            padding: 1.25rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
             font-size: 0.85rem;
-            color: var(--text-muted);
+            transition: transform 0.2s;
         }
+
+        .deploy-card:hover { transform: scale(1.02); }
+        .deploy-type { font-weight: 700; display: block; margin-bottom: 0.5rem; color: var(--text); }
+        .deploy-usage { color: var(--text-muted); }
 
         .start-btn {
+            display: block;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
             background: var(--primary);
             color: white;
             border: none;
-            padding: 1rem 2.5rem;
-            border-radius: 8px;
+            padding: 1.25rem;
+            border-radius: 10px;
             font-size: 1.1rem;
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
             transition: all 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
         }
 
-        .start-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
-        }
+        .start-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
 
-        /* Questionnaire Styles (from original) */
-        #questionnaire {
-            display: none;
-        }
+        /* Questionnaire & Progress (Hidden by default) */
+        #intro { animation: fadeIn 0.6s ease-out; }
+        #questionnaire { display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .question {
-            margin-bottom: 2rem;
-            display: none;
-            animation: fadeIn 0.4s ease-out;
-        }
+        /* Questionnaire Card Refinement */
+        progress { width: 100%; height: 10px; border-radius: 5px; margin-bottom: 3rem; }
+        progress::-webkit-progress-bar { background-color: var(--border); border-radius: 5px; }
+        progress::-webkit-progress-value { background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 5px; }
 
-        .question.active {
-            display: block;
-        }
+        .question { margin-bottom: 2rem; display: none; animation: fadeIn 0.4s ease-out; }
+        .question.active { display: block; }
+        label { display: block; font-weight: 800; margin-bottom: 2rem; font-size: 1.4rem; text-align: center; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            font-size: 1.25rem;
-        }
-
-        .options {
-            display: grid;
-            gap: 1rem;
-        }
-
+        .options { display: grid; gap: 1rem; }
         .option {
             border: 2px solid var(--border);
-            border-radius: 8px;
-            padding: 1.25rem;
+            border-radius: 12px;
+            padding: 1.5rem;
             cursor: pointer;
             transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
+            background: white;
         }
+        .option:hover { border-color: var(--primary); background: var(--primary-light); }
+        .option-title { font-weight: 800; font-size: 1.1rem; margin-bottom: 0.25rem; }
+        .option-desc { font-size: 0.9rem; color: var(--text-muted); }
 
-        .option:hover {
-            border-color: var(--primary);
-            background: var(--primary-light);
-        }
-
-        .option-title {
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .option-desc {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        .result {
-            display: none;
-            text-align: center;
-        }
-
-        .result.active {
-            display: block;
-        }
-
+        /* Result Screen */
+        .result { display: none; text-align: center; }
+        .result.active { display: block; }
         .command-box {
             background: #1e293b;
             color: #f8fafc;
-            padding: 1.5rem;
-            border-radius: 8px;
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            font-size: 0.9rem;
-            position: relative;
-            margin: 1.5rem 0;
+            padding: 2rem;
+            border-radius: 10px;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: 0.95rem;
             text-align: left;
-            word-break: break-all;
+            margin: 2rem 0;
+            border: 1px solid rgba(255,255,255,0.1);
+            line-height: 1.4;
         }
-
-        .copy-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .copy-btn:hover {
-            opacity: 0.9;
-        }
-
         .badge {
             display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
+            padding: 0.4rem 1rem;
+            border-radius: 99px;
             font-size: 0.75rem;
-            font-weight: 700;
+            font-weight: 800;
             text-transform: uppercase;
             margin-bottom: 1rem;
-            background: #dcfce7;
-            color: #166534;
         }
-
-        progress {
-            width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            margin-bottom: 2rem;
-            display: none;
-        }
-
-        progress::-webkit-progress-bar { background-color: var(--border); border-radius: 4px; }
-        progress::-webkit-progress-value { background-color: var(--primary); border-radius: 4px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card">
-        <!-- Intro Screen -->
+        <!-- Section 1: Visualization & Intro -->
         <div id="intro">
-            <span class="badge" style="background: #e0e7ff; color: #3730a3;">NIST AI RMF 1.0</span>
-            <h1>AI-RMF Lifecycle Tools</h1>
-            <p class="subtitle">An automated, persona-driven toolkit for operationalizing AI risk management.</p>
+            <span class="badge" style="background: var(--primary-light); color: var(--primary);">NIST AI RMF 1.0 Framework</span>
+            <h1>AI-RMF Lifecycle Architect</h1>
+            <p class="subtitle">Operationalize AI Governance with persona-driven automation.</p>
 
-            <div class="lifecycle-viz">
-                <div class="step">
-                    <div class="icon-circle">1</div>
-                    <span class="step-label">Govern</span>
+            <div class="flow-viz">
+                <div class="flow-node">
+                    <div class="node-icon">G</div>
+                    <span class="node-label">Govern</span>
+                    <span class="node-persona">The Librarian</span>
                 </div>
-                <div class="step">
-                    <div class="icon-circle">2</div>
-                    <span class="step-label">Map</span>
+                <div class="flow-node">
+                    <div class="node-icon">M</div>
+                    <span class="node-label">Map</span>
+                    <span class="node-persona">The Adversary</span>
                 </div>
-                <div class="step">
-                    <div class="icon-circle">3</div>
-                    <span class="step-label">Manage</span>
+                <div class="flow-node">
+                    <div class="node-icon">M</div>
+                    <span class="node-label">Manage</span>
+                    <span class="node-persona">The Sentry</span>
                 </div>
-                <div class="step">
-                    <div class="icon-circle">4</div>
-                    <span class="step-label">Measure</span>
+                <div class="flow-node">
+                    <div class="node-icon">M</div>
+                    <span class="node-label">Measure</span>
+                    <span class="node-persona">The Auditor</span>
                 </div>
             </div>
 
-            <div class="persona-grid">
-                <div class="persona-item">
-                    <span class="persona-name">The Librarian</span>
-                    <span class="persona-desc">Conducts NIST-aligned interviews to build your AI-BOM and policy.</span>
+            <div class="sentry-options">
+                <div class="sentry-header">
+                    <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--primary); display: flex; justify-content: center; align-items: center; color: white; font-weight: bold;">S</div>
+                    <div class="sentry-title">Sentry Deployment Flexibility</div>
                 </div>
-                <div class="persona-item">
-                    <span class="persona-name">The Adversary</span>
-                    <span class="persona-desc">Probes your model for injections and safety bypasses.</span>
-                </div>
-                <div class="persona-item">
-                    <span class="persona-name">The Sentry</span>
-                    <span class="persona-desc">Deploys local, real-time firewalls to block PII and toxic output.</span>
-                </div>
-                <div class="persona-item">
-                    <span class="persona-name">The Auditor</span>
-                    <span class="persona-desc">Generates automated compliance reports and monitors drift.</span>
+                <p style="font-size: 0.9rem; margin-bottom: 1.5rem; color: var(--text-muted);">The <b>Manage</b> phase (Sentry) supports three distinct deployment architectures to fit your existing application stack:</p>
+                <div class="deployment-grid">
+                    <div class="deploy-card">
+                        <span class="deploy-type">1. Library-Based</span>
+                        <span class="deploy-usage">Directly import <code>core/sentry.py</code> into your Python app for zero-latency safety checks.</span>
+                    </div>
+                    <div class="deploy-card" style="border-top: 4px solid var(--accent);">
+                        <span class="deploy-type">2. Middleware Proxy</span>
+                        <span class="deploy-usage">Run a standalone "Secure Firewall" that intercepts all traffic before it reaches the model.</span>
+                    </div>
+                    <div class="deploy-card">
+                        <span class="deploy-type">3. Prompt-Based</span>
+                        <span class="deploy-usage">Inject manifest guardrails directly into the System Prompt for lightweight enforcement.</span>
+                    </div>
                 </div>
             </div>
 
-            <button class="start-btn" onclick="startDeployment()">Start Deployment Wizard</button>
+            <button class="start-btn" onclick="startDeployment()">Start Configuration Wizard</button>
         </div>
 
-        <!-- Questionnaire -->
+        <!-- Section 2: Wizard -->
         <div id="questionnaire">
-            <progress id="progress" value="25" max="100" style="display: block;"></progress>
-            
+            <progress id="progress" value="33" max="100"></progress>
             <div id="q-container">
-                <!-- Question 1 -->
                 <div class="question active" id="q1">
-                    <label>Where will the tools be deployed?</label>
+                    <label>Where will the AI-RMF workspace reside?</label>
                     <div class="options">
-                        <div class="option" onclick="select(1, 'local', 'Local Dev Laptop')">
-                            <span class="option-title">Local Dev Laptop</span>
-                            <span class="option-desc">Ideal for testing and individual project governance.</span>
+                        <div class="option" onclick="select(1, 'local', 'Local Machine')">
+                            <div class="option-title">Local Dev Environment</div>
+                            <div class="option-desc">Best for rapid prototyping and local model development.</div>
                         </div>
                         <div class="option" onclick="select(1, 'cloud', 'Cloud / Hybrid')">
-                            <span class="option-title">Cloud / Hybrid</span>
-                            <span class="option-desc">AWS, GCP, Azure, or private cloud environments.</span>
+                            <div class="option-title">Cloud Infrastructure</div>
+                            <div class="option-desc">Scalable deployment for shared project governance.</div>
                         </div>
                         <div class="option" onclick="select(1, 'prem', 'On-Premise')">
-                            <span class="option-title">On-Premise</span>
-                            <span class="option-desc">Air-gapped or high-security internal infrastructure.</span>
+                            <div class="option-title">On-Premise / Air-gapped</div>
+                            <div class="option-desc">Maximum security for isolated, sensitive environments.</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Question 2 -->
                 <div class="question" id="q2">
-                    <label>Security Isolation Requirement?</label>
+                    <label>Preferred Isolation Level?</label>
                     <div class="options">
                         <div class="option" onclick="select(2, 'standard', 'Standard')">
-                            <span class="option-title">Standard Execution</span>
-                            <span class="option-desc">Runs directly in the user environment via <code>uv</code>.</span>
+                            <div class="option-title">Standard (User-Space)</div>
+                            <div class="option-desc">Native execution using <code>uv</code> virtual environments.</div>
                         </div>
                         <div class="option" onclick="select(2, 'strict', 'Strict Sandbox')">
-                            <span class="option-title">Strict Isolation</span>
-                            <span class="option-desc">Forces all agents into <code>bwrap</code> or <code>sandbox-exec</code>.</span>
+                            <div class="option-title">Hardened Sandbox</div>
+                            <div class="option-desc">Force agents into <code>bwrap</code> or <code>sandbox-exec</code> jails.</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Question 3 -->
                 <div class="question" id="q3">
-                    <label>Internet Access Availability?</label>
+                    <label>Internet Visibility?</label>
                     <div class="options">
                         <div class="option" onclick="select(3, 'full', 'Full Access')">
-                            <span class="option-title">Connected</span>
-                            <span class="option-desc">Can reach external LLM APIs (OpenAI, Gemini).</span>
+                            <div class="option-title">Connected</div>
+                            <div class="option-desc">Allows use of external APIs (OpenAI, Anthropic, Gemini).</div>
                         </div>
-                        <div class="option" onclick="select(3, 'none', 'No Access (Offline)')">
-                            <span class="option-title">Offline Only</span>
-                            <span class="option-desc">Strictly uses local models (Ollama, vLLM).</span>
+                        <div class="option" onclick="select(3, 'none', 'No Access')">
+                            <div class="option-title">Offline Only</div>
+                            <div class="option-desc">Strictly utilizes local models (Ollama, vLLM, transformers).</div>
                         </div>
                     </div>
                 </div>
@@ -388,29 +325,18 @@
 
             <!-- Result -->
             <div id="result" class="result">
-                <span class="badge" id="flavor-badge">Hybrid Config</span>
-                <h1>Deployment Ready</h1>
-                <p class="subtitle">Run the command below to initialize your AI-RMF workspace.</p>
-                
-                <div class="command-box" id="command">
-                    curl -sSL https://raw.githubusercontent.com/WarrenRoyH/AI-RMF-Tool/main/bootstrap.sh | sh -s -- --flavor cloud
-                </div>
-
-                <button class="copy-btn" onclick="copyCommand()">Copy Command</button>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1.5rem;">
-                    Powered by <code>uv</code>. No <code>sudo</code> required.
-                </p>
+                <span class="badge" id="flavor-badge" style="background: #dcfce7; color: #166534;">Config Ready</span>
+                <h1>Deployment Package Ready</h1>
+                <p class="subtitle">Run this command to bootstrap your NIST AI RMF environment.</p>
+                <div class="command-box" id="command"></div>
+                <button class="start-btn" onclick="copyCommand()" id="copy-btn" style="max-width: 240px;">Copy Command</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    const state = {
-        infra: '',
-        security: '',
-        network: ''
-    };
+    const state = { infra: '', security: '', network: '' };
 
     function startDeployment() {
         document.getElementById('intro').style.display = 'none';
@@ -435,7 +361,7 @@
     }
 
     function showResult() {
-        document.getElementById('progress').value = 100;
+        document.getElementById('progress').style.display = 'none';
         document.getElementById('q-container').style.display = 'none';
         const result = document.getElementById('result');
         result.classList.add('active');
@@ -455,19 +381,18 @@
             flags += ' --sandbox strict';
         }
 
-        document.getElementById('flavor-badge').innerText = flavor.toUpperCase() + " CONFIG";
+        document.getElementById('flavor-badge').innerText = flavor.toUpperCase() + " CONFIGURATION";
         document.getElementById('command').innerText = `curl -sSL https://raw.githubusercontent.com/WarrenRoyH/AI-RMF-Tool/main/bootstrap.sh | sh -s --${flags}`;
     }
 
     function copyCommand() {
         const cmd = document.getElementById('command').innerText;
         navigator.clipboard.writeText(cmd);
-        const btn = document.querySelector('.copy-btn');
-        const originalText = btn.innerText;
-        btn.innerText = 'Copied to Clipboard!';
+        const btn = document.getElementById('copy-btn');
+        btn.innerText = 'Copied!';
         btn.style.background = 'var(--success)';
         setTimeout(() => {
-            btn.innerText = originalText;
+            btn.innerText = 'Copy Command';
             btn.style.background = 'var(--primary)';
         }, 2000);
     }
