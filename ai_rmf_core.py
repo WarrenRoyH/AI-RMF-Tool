@@ -69,6 +69,12 @@ def run_govern():
             print(f"    * {s}")
             suggested_models.append(s.split(":")[-1].strip())
 
+    if report['code']['libraries']:
+        print(f"--> Found AI libraries in dependencies: {', '.join(report['code']['libraries'])}")
+    
+    if report['code']['files_with_ai']:
+        print(f"--> Detected AI integrations in source files: {', '.join(report['code']['files_with_ai'])}")
+
     suggested_purpose = ", ".join(report['purpose_hints']) if report['purpose_hints'] else "General AI Task"
     if report['purpose_hints']:
         print(f"--> Inferred system purpose: {suggested_purpose}")

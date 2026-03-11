@@ -39,12 +39,50 @@ class ModelDiscovery:
         for path in self.common_paths:
             if path.exists():
                 # Check for .gguf files or common manifest files
-                for root, dirs, files in os.walk(path):
-                    for file in files:
-                        if file.endswith(".gguf") or file == "config.json":
-                            found_models.append(f"{path.name}: {file}")
-                            if len(found_models) > 5: break # Limit results
+                try:
+                    for root, dirs, files in os.walk(path):
+                        for file in files:
+                            if file.endswith(".gguf") or file == "config.json":
+                                found_models.append(f"{path.name}: {file}")
+                                if len(found_models) > 5: break
+                except: continue
         return found_models
+
+    def scan_project_code(self):
+        """Scans the current directory for AI imports and dependencies."""
+        findings = {"libraries": [], "files_with_ai": []}
+        ai_keywords = ['openai', 'anthropic', 'langchain', 'llama', 'transformers', 'torch', 'tensorflow', 'vertexai', 'google.generativeai']
+        
+        # 1. Check dependency files
+        dep_files = ['requirements.txt', 'package.json', 'pyproject.toml']
+        for df in dep_files:
+            p = Path.cwd() / df
+            if p.exists():
+                try:
+                    content = p.read_text().lower()
+                    for kw in ai_keywords:
+                        if kw in content:
+                            findings["libraries"].append(f"{df}: {kw}")
+                except: continue
+
+        # 2. Scan source files for imports
+        extensions = ['.py', '.js', '.ts']
+        try:
+            for root, dirs, files in os.walk(Path.cwd()):
+                if '.venv' in root or '.git' in root: continue
+                for file in files:
+                    if any(file.endswith(ext) for ext in extensions):
+                        p = Path(root) / file
+                        try:
+                            content = p.read_text().lower()
+                            if any(f"import {kw}" in content or f"from {kw}" in content for kw in ai_keywords):
+                                findings["files_with_ai"].append(file)
+                                if len(findings["files_with_ai"]) > 5: break
+                        except: continue
+                if len(findings["files_with_ai"]) > 5: break
+        except: pass
+        
+        return findings
 
     def detect_purpose(self):
         """Infers system purpose from environment and folder names."""
@@ -67,6 +105,7 @@ class ModelDiscovery:
         return {
             "running": self.find_running_models(),
             "stored": self.scan_local_storage(),
+            "code": self.scan_project_code(),
             "purpose_hints": self.detect_purpose()
         }
 
