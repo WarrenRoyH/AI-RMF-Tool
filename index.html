@@ -39,147 +39,124 @@
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 3.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05), 0 10px 10px -5px rgba(0,0,0,0.04);
+            border-radius: 24px;
+            padding: 4rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.05);
             position: relative;
         }
 
-        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; text-align: center; letter-spacing: -0.025em; }
-        p.subtitle { color: var(--text-muted); text-align: center; margin-bottom: 3.5rem; font-size: 1.125rem; }
-
-        /* Flow Visualization */
-        .flow-viz {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 0 auto 4rem;
-            max-width: 700px;
-            position: relative;
-        }
-
-        .flow-viz::before {
-            content: '';
-            position: absolute;
-            top: 25px;
-            left: 50px;
-            right: 50px;
-            height: 2px;
-            background: var(--border);
-            z-index: 1;
-        }
-
-        .flow-step {
-            position: relative;
-            z-index: 2;
-            background: var(--card-bg);
-            padding: 0 10px;
-            text-align: center;
-        }
-
-        .flow-dot {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--primary-light);
-            color: var(--primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 800;
-            border: 2px solid var(--primary);
-            margin: 0 auto 0.5rem;
-        }
-
-        .flow-label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); }
+        h1 { font-size: 2.75rem; margin-bottom: 0.5rem; text-align: center; letter-spacing: -0.025em; font-weight: 800; }
+        p.subtitle { color: var(--text-muted); text-align: center; margin-bottom: 4rem; font-size: 1.25rem; }
 
         /* Agent Ecosystem Grid */
         .agent-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 2rem;
+            gap: 2.5rem;
             margin-bottom: 4rem;
         }
 
         .agent-card {
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 2rem;
-            background: #fdfdfe;
-            transition: all 0.3s ease;
+            border-radius: 20px;
+            padding: 2.5rem;
+            background: #ffffff;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .agent-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-8px);
             border-color: var(--primary);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
         }
 
         .agent-header {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.25rem;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
         }
 
         .agent-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
             background: var(--primary);
             color: white;
             display: flex;
             justify-content: center;
             align-items: center;
             font-weight: 800;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
         }
 
-        .agent-title { font-weight: 800; font-size: 1.25rem; }
-        .agent-role { font-size: 0.95rem; color: var(--text); margin-bottom: 1rem; font-weight: 500; }
-        .agent-desc { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem; flex-grow: 1; }
-
-        .agent-meta {
-            border-top: 1px solid var(--border);
-            padding-top: 1.25rem;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
-        }
-
-        .meta-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; }
-        .meta-label { font-weight: 700; color: var(--text-muted); min-width: 80px; }
-        .meta-value { font-family: monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: var(--primary-dark); }
-
-        /* Special Sentry Detail */
-        .sentry-modes {
-            margin-top: 1rem;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.5rem;
-        }
-        .mode-tag {
-            font-size: 0.7rem;
-            background: var(--primary-light);
+        .agent-title { font-weight: 800; font-size: 1.5rem; color: var(--text); }
+        .agent-phase { 
+            font-size: 0.75rem; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 0.1em; 
             color: var(--primary);
+            background: var(--primary-light);
+            padding: 4px 12px;
+            border-radius: 99px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .agent-desc { font-size: 1rem; color: var(--text-muted); margin-bottom: 2rem; flex-grow: 1; }
+
+        .deployment-info {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .deploy-label { 
+            font-weight: 800; 
+            font-size: 0.8rem; 
+            color: var(--text); 
+            text-transform: uppercase; 
+            display: block;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .deploy-text { font-size: 0.9rem; color: var(--text-muted); }
+
+        /* Sentry Specific Styles */
+        .sentry-modes {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .mode-pill {
+            font-size: 0.7rem;
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text);
             padding: 4px;
             text-align: center;
-            border-radius: 4px;
+            border-radius: 6px;
             font-weight: 700;
         }
 
         .start-btn {
             display: block;
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             margin: 0 auto;
             background: var(--primary);
             color: white;
             border: none;
-            padding: 1.25rem;
-            border-radius: 12px;
+            padding: 1.5rem;
+            border-radius: 16px;
             font-size: 1.25rem;
             font-weight: 800;
             cursor: pointer;
@@ -224,20 +201,11 @@
             padding: 2.5rem;
             border-radius: 12px;
             font-family: "SFMono-Regular", Consolas, monospace;
-            font-size: 1rem;
+            font-size: 1.1rem;
             text-align: left;
             margin: 2.5rem 0;
             line-height: 1.5;
             border: 1px solid rgba(255,255,255,0.1);
-        }
-        .badge {
-            display: inline-block;
-            padding: 0.5rem 1.25rem;
-            border-radius: 99px;
-            font-size: 0.8rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            margin-bottom: 1.5rem;
         }
     </style>
 </head>
@@ -247,80 +215,73 @@
     <div class="card">
         <!-- Section 1: Agent Ecosystem Intro -->
         <div id="intro">
-            <span class="badge" style="background: var(--primary-light); color: var(--primary);">NIST AI Risk Management Framework</span>
-            <h1>Lifecycle Tool Architect</h1>
-            <p class="subtitle">Deploy specialized agents to manage your AI risk lifecycle automatically.</p>
-
-            <div class="flow-viz">
-                <div class="flow-step"><div class="flow-dot">1</div><span class="flow-label">Govern</span></div>
-                <div class="flow-step"><div class="flow-dot">2</div><span class="flow-label">Map</span></div>
-                <div class="flow-step"><div class="flow-dot">3</div><span class="flow-label">Manage</span></div>
-                <div class="flow-step"><div class="flow-dot">4</div><span class="flow-label">Measure</span></div>
-            </div>
+            <h1>AI-RMF Lifecycle Architect</h1>
+            <p class="subtitle">Persona-driven automation for the NIST AI Risk Management Framework.</p>
 
             <div class="agent-grid">
                 <!-- Librarian -->
                 <div class="agent-card">
+                    <div class="agent-phase">Phase 1: Govern</div>
                     <div class="agent-header">
-                        <div class="agent-icon" style="background: var(--primary);">L</div>
+                        <div class="agent-icon">L</div>
                         <div class="agent-title">The Librarian</div>
                     </div>
-                    <div class="agent-role">Phase 1: GOVERN</div>
-                    <div class="agent-desc">Performs local system discovery and interactive interviews to establish your AI-BOM and safety policy manifest.</div>
-                    <div class="agent-meta">
-                        <div class="meta-item"><span class="meta-label">Action</span><span class="meta-value">./ai-rmf govern</span></div>
-                        <div class="meta-item"><span class="meta-label">Deploy</span><span class="meta-value">Interactive CLI</span></div>
+                    <div class="agent-desc">Establishes the foundational AI Bill of Materials (AI-BOM) and organizational safety policies.</div>
+                    <div class="deployment-info">
+                        <span class="deploy-label">Deployment Method</span>
+                        <div class="deploy-text">Runs as an <b>Interactive Management Console</b> on developer or compliance workstations to initialize the project state.</div>
                     </div>
                 </div>
 
                 <!-- Adversary -->
                 <div class="agent-card">
+                    <div class="agent-phase">Phase 2: Map</div>
                     <div class="agent-header">
                         <div class="agent-icon" style="background: var(--accent);">A</div>
                         <div class="agent-title">The Adversary</div>
                     </div>
-                    <div class="agent-role">Phase 2: MAP</div>
-                    <div class="agent-desc">Probes the local model for prompt injections, jailbreaks, and vulnerabilities based on the Librarian's manifest.</div>
-                    <div class="agent-meta">
-                        <div class="meta-item"><span class="meta-label">Action</span><span class="meta-value">./ai-rmf map</span></div>
-                        <div class="meta-item"><span class="meta-label">Deploy</span><span class="meta-value">Local Scan (Garak)</span></div>
+                    <div class="agent-desc">Characterizes the attack surface by probing for prompt injections, jailbreaks, and safety bypasses.</div>
+                    <div class="deployment-info">
+                        <span class="deploy-label">Deployment Method</span>
+                        <div class="deploy-text">Deployed as an <b>Isolated Vulnerability Scanner</b> within a secured sandbox to stress-test local model weights.</div>
                     </div>
                 </div>
 
                 <!-- Sentry -->
                 <div class="agent-card">
+                    <div class="agent-phase">Phase 3: Manage</div>
                     <div class="agent-header">
                         <div class="agent-icon" style="background: var(--warning);">S</div>
                         <div class="agent-title">The Sentry</div>
                     </div>
-                    <div class="agent-role">Phase 3: MANAGE</div>
-                    <div class="agent-desc">Real-time firewall that intercepts and sanitizes traffic to enforce safety policies and block PII leaks.</div>
-                    <div class="agent-meta">
-                        <div class="meta-item"><span class="meta-label">Action</span><span class="meta-value">./ai-rmf manage</span></div>
+                    <div class="agent-desc">Provides real-time mitigation by intercepting and sanitizing model inputs and outputs.</div>
+                    <div class="deployment-info">
+                        <span class="deploy-label">Deployment Options</span>
+                        <div class="deploy-text">Integrated as a <b>Local Library</b>, a standalone <b>Security Proxy</b>, or via <b>System Instruction</b> injection.</div>
                         <div class="sentry-modes">
-                            <div class="mode-tag">Library</div>
-                            <div class="mode-tag">Proxy</div>
-                            <div class="mode-tag">Prompt</div>
+                            <div class="mode-pill">Library</div>
+                            <div class="mode-pill">Proxy</div>
+                            <div class="mode-pill">Prompt</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Auditor -->
                 <div class="agent-card">
+                    <div class="agent-phase">Phase 4: Measure</div>
                     <div class="agent-header">
                         <div class="agent-icon" style="background: var(--success);">A</div>
                         <div class="agent-title">The Auditor</div>
                     </div>
-                    <div class="agent-role">Phase 4: MEASURE</div>
-                    <div class="agent-desc">Performs continuous observability and generates NIST-aligned compliance reports from live system logs.</div>
-                    <div class="agent-meta">
-                        <div class="meta-item"><span class="meta-label">Action</span><span class="meta-value">./ai-rmf measure</span></div>
-                        <div class="meta-item"><span class="meta-label">Deploy</span><span class="meta-value">Log Audit / Phoenix</span></div>
+                    <div class="agent-desc">Evaluates safety performance and compliance through continuous observability and log analysis.</div>
+                    <div class="deployment-info">
+                        <span class="deploy-label">Deployment Method</span>
+                        <div class="deploy-text">Deployed as a <b>Continuous Monitoring Agent</b> that generates NIST reports and serves a live observability dashboard.</div>
                     </div>
                 </div>
             </div>
 
-            <button class="start-btn" onclick="startDeployment()">Start Configuration Wizard</button>
+            <button class="start-btn" onclick="startDeployment()">Configure Deployment Environment</button>
         </div>
 
         <!-- Section 2: Wizard -->
@@ -328,7 +289,7 @@
             <progress id="progress" value="33" max="100"></progress>
             <div id="q-container">
                 <div class="question active" id="q1">
-                    <label>Deployment Environment?</label>
+                    <label>Where will the AI-RMF workspace reside?</label>
                     <div class="options">
                         <div class="option" onclick="select(1, 'local', 'Local Machine')">
                             <div class="option-title">Local Development</div>
@@ -346,7 +307,7 @@
                 </div>
 
                 <div class="question" id="q2">
-                    <label>Execution Sandbox?</label>
+                    <label>Preferred Isolation Level?</label>
                     <div class="options">
                         <div class="option" onclick="select(2, 'standard', 'Standard')">
                             <div class="option-title">Standard Execution</div>
@@ -360,7 +321,7 @@
                 </div>
 
                 <div class="question" id="q3">
-                    <label>Network Connectivity?</label>
+                    <label>Internet Visibility?</label>
                     <div class="options">
                         <div class="option" onclick="select(3, 'full', 'Full Access')">
                             <div class="option-title">Online / API-Enabled</div>
@@ -376,8 +337,7 @@
 
             <!-- Result -->
             <div id="result" class="result">
-                <span class="badge" id="flavor-badge" style="background: #dcfce7; color: #166534;">Package Ready</span>
-                <h1>Configuration Finalized</h1>
+                <h1 style="color: var(--success); margin-bottom: 1rem;">Deployment Package Ready</h1>
                 <p class="subtitle">Execute the following command to bootstrap your workspace.</p>
                 <div class="command-box" id="command"></div>
                 <button class="start-btn" onclick="copyCommand()" id="copy-btn" style="max-width: 280px;">Copy Command</button>
@@ -417,22 +377,16 @@
         const result = document.getElementById('result');
         result.classList.add('active');
 
-        let flavor = 'standard';
         let flags = '';
-
         if (state.infra === 'prem' || state.network === 'none') {
-            flavor = 'offline';
             flags += ' --offline';
         } else if (state.infra === 'cloud') {
-            flavor = 'cloud';
             flags += ' --flavor cloud';
         }
-
         if (state.security === 'strict') {
             flags += ' --sandbox strict';
         }
 
-        document.getElementById('flavor-badge').innerText = flavor.toUpperCase() + " CONFIGURATION";
         document.getElementById('command').innerText = `curl -sSL https://raw.githubusercontent.com/WarrenRoyH/AI-RMF-Tool/main/bootstrap.sh | sh -s --${flags}`;
     }
 
@@ -440,11 +394,10 @@
         const cmd = document.getElementById('command').innerText;
         navigator.clipboard.writeText(cmd);
         const btn = document.getElementById('copy-btn');
-        const originalText = btn.innerText;
         btn.innerText = 'Copied to Clipboard!';
         btn.style.background = 'var(--success)';
         setTimeout(() => {
-            btn.innerText = originalText;
+            btn.innerText = 'Copy Command';
             btn.style.background = 'var(--primary)';
         }, 2000);
     }
