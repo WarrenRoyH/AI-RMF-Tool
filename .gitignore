@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 workspace/
 librarian-needs.txt
+agent-list.txt
