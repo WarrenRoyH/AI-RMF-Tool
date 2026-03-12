@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 import time
 from pathlib import Path
@@ -14,30 +15,50 @@ class Inspector:
         self.port = 6006 # Default Phoenix port
 
     def start_observability_server(self):
-        """Launches the Arize Phoenix local dashboard."""
-        print(f"--> [INSPECTOR]: Launching local observability dashboard on http://localhost:{self.port}...")
+        """Launches the Arize Phoenix local dashboard and configures environment."""
+        print(f"--> [INSPECTOR]: Launching unified observability dashboard on http://localhost:{self.port}...")
         
-        # In a real environment, we'd use the phoenix library directly, 
-        # but for this CLI we'll simulate the launch.
+        # Set environment variables for Phoenix to pick up our Sentry logs if integrated via OpenInference
+        os.environ["PHOENIX_PORT"] = str(self.port)
+        os.environ["PHOENIX_PROJECT_NAME"] = "ai-rmf-sentry"
+
         try:
-            # Check if phoenix is already running
             import requests
             requests.get(f"http://localhost:{self.port}", timeout=1)
             return f"Dashboard is already active at http://localhost:{self.port}"
         except:
             # Launch phoenix as a background process
-            # phoenix.launch() would be the internal call
-            cmd = ["python3", "-m", "phoenix.server.main", "--port", str(self.port)]
+            cmd = [sys.executable, "-m", "phoenix.server.main", "--port", str(self.port)]
             subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return f"Observability server started. Access it at http://localhost:{self.port}"
+            
+            # Wait for startup
+            print("    Waiting for dashboard to initialize...")
+            time.sleep(3)
+            return f"Unified Observability server started. Access it at http://localhost:{self.port}"
 
     def get_monitoring_status(self):
-        """Checks the health of the monitoring logs."""
-        log_file = self.log_dir / "sentry_violations.jsonl"
-        if not log_file.exists():
-            return "Warning: No live traffic logs found. Continuous monitoring is idle."
+        """Checks the health of the monitoring logs and scan artifacts."""
+        status_reports = []
         
-        file_size = log_file.stat().st_size
-        return f"Monitoring active. Log size: {file_size / 1024:.2f} KB. Dashboard ready for analysis."
+        # 1. Sentry Traffic
+        log_file = self.log_dir / "sentry_violations.jsonl"
+        if log_file.exists():
+            size = log_file.stat().st_size / 1024
+            status_reports.append(f"  * Sentry Traffic Logs: [ACTIVE] ({size:.2f} KB)")
+        else:
+            status_reports.append("  * Sentry Traffic Logs: [IDLE] (No live data yet)")
+
+        # 2. Garak Scans
+        garak_dir = self.workspace_dir / "reports" / "garak"
+        if garak_dir.exists():
+            scan_count = len(list(garak_dir.glob("*.jsonl")))
+            status_reports.append(f"  * Garak Vulnerability Scans: [FOUND] ({scan_count} reports)")
+        
+        # 3. Promptfoo Evals
+        pf_config = self.workspace_dir / "promptfoo_config.json"
+        if pf_config.exists():
+            status_reports.append(f"  * Accuracy Benchmarks: [CONFIGURED] (Ready for Phoenix import)")
+
+        return "\n".join(status_reports)
 
 inspector = Inspector()

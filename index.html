@@ -107,7 +107,23 @@
             margin-bottom: 1rem;
         }
 
-        .agent-desc { font-size: 1rem; color: var(--text-muted); margin-bottom: 2rem; flex-grow: 1; }
+        .agent-desc { font-size: 1rem; color: var(--text-muted); margin-bottom: 1.5rem; flex-grow: 1; }
+
+        .capability-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: #f1f5f9;
+            color: #475569;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
 
         .deployment-info {
             background: #f8fafc;
@@ -129,94 +145,38 @@
 
         .deploy-text { font-size: 0.9rem; color: var(--text-muted); }
 
-        /* Sentry Specific Styles */
-        .sentry-modes {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        .mode-pill {
-            font-size: 0.7rem;
-            background: white;
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 4px;
-            text-align: center;
-            border-radius: 6px;
-            font-weight: 700;
-        }
-
-        .start-btn {
-            display: block;
-            width: 100%;
-            max-width: 450px;
-            margin: 0 auto;
-            background: var(--primary);
+        /* Autopilot Hero Section */
+        .autopilot-hero {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
             color: white;
-            border: none;
-            padding: 1.5rem;
-            border-radius: 16px;
-            font-size: 1.25rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
-        }
-
-        .start-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
-
-        /* Questionnaire Logic */
-        #intro { animation: fadeIn 0.6s ease-out; }
-        #questionnaire { display: none; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        progress { width: 100%; height: 12px; border-radius: 6px; margin-bottom: 4rem; }
-        progress::-webkit-progress-bar { background-color: var(--border); border-radius: 6px; }
-        progress::-webkit-progress-value { background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 6px; }
-
-        .question { display: none; animation: fadeIn 0.4s ease-out; }
-        .question.active { display: block; }
-        label { display: block; font-weight: 800; margin-bottom: 2.5rem; font-size: 1.75rem; text-align: center; }
-
-        .options { display: grid; gap: 1.25rem; }
-        .option {
-            border: 2px solid var(--border);
-            border-radius: 16px;
-            padding: 1.75rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: white;
-        }
-        .option:hover { border-color: var(--primary); background: var(--primary-light); }
-        .option-title { font-weight: 800; font-size: 1.2rem; margin-bottom: 0.5rem; }
-        .option-desc { font-size: 0.95rem; color: var(--text-muted); }
-
-        /* Result */
-        .result { display: none; text-align: center; }
-        .result.active { display: block; }
-        .command-box {
-            background: #1e293b;
-            color: #f8fafc;
+            border-radius: 20px;
             padding: 2.5rem;
-            border-radius: 12px;
-            font-family: "SFMono-Regular", Consolas, monospace;
-            font-size: 1.1rem;
-            text-align: left;
-            margin: 2.5rem 0;
-            line-height: 1.5;
+            margin-bottom: 4rem;
+            text-align: center;
             border: 1px solid rgba(255,255,255,0.1);
         }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="card">
-        <!-- Section 1: Agent Ecosystem Intro -->
+        .hero-tag {
+            background: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 900;
+            padding: 4px 12px;
+            border-radius: 99px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+...
         <div id="intro">
             <h1>AI-RMF Lifecycle Architect</h1>
-            <p class="subtitle">Persona-driven automation for the NIST AI Risk Management Framework.</p>
+            <p class="subtitle">Production-grade automation for the NIST AI Risk Management Framework.</p>
+
+            <!-- Autopilot Callout -->
+            <div class="autopilot-hero">
+                <span class="hero-tag">New: Autopilot Mode</span>
+                <h2 style="color: white; border: none; margin-top: 0.5rem;">One-Command Compliance</h2>
+                <p style="color: #94a3b8; font-size: 1.1rem;">Automate the full lifecycle from discovery to PDF report generation in a single CI/CD-ready pipeline.</p>
+                <code>./ai-rmf autopilot</code>
+            </div>
 
             <div class="agent-grid">
                 <!-- Librarian -->
@@ -226,10 +186,15 @@
                         <div class="agent-icon">L</div>
                         <div class="agent-title">The Librarian</div>
                     </div>
-                    <div class="agent-desc">Establishes the foundational AI Bill of Materials (AI-BOM) and organizational safety policies.</div>
+                    <div class="agent-desc">Automates project initialization and safety policy drafting using context-aware environment discovery.</div>
+                    <div class="capability-tags">
+                        <span class="tag">Industry Templates</span>
+                        <span class="tag">Auto-Policy Drafting</span>
+                        <span class="tag">AI-BOM</span>
+                    </div>
                     <div class="deployment-info">
-                        <span class="deploy-label">Deployment Method</span>
-                        <div class="deploy-text">Runs as an <b>Interactive Management Console</b> on developer or compliance workstations to initialize the project state.</div>
+                        <span class="deploy-label">Key Output</span>
+                        <div class="deploy-text">Generates <b>NIST Project Manifest</b> and draft compliance policies (AUP, SSP, IRP) instantly.</div>
                     </div>
                 </div>
 
@@ -240,10 +205,15 @@
                         <div class="agent-icon" style="background: var(--accent);">A</div>
                         <div class="agent-title">The Adversary</div>
                     </div>
-                    <div class="agent-desc">Characterizes the attack surface by probing for prompt injections, jailbreaks, and safety bypasses.</div>
+                    <div class="agent-desc">Performs deep adversarial mapping through automated vulnerability scanning and threat modeling.</div>
+                    <div class="capability-tags">
+                        <span class="tag">Garak Integration</span>
+                        <span class="tag">Jailbreak Probing</span>
+                        <span class="tag">Threat Maps</span>
+                    </div>
                     <div class="deployment-info">
-                        <span class="deploy-label">Deployment Method</span>
-                        <div class="deploy-text">Deployed as an <b>Isolated Vulnerability Scanner</b> within a secured sandbox to stress-test local model weights.</div>
+                        <span class="deploy-label">Key Output</span>
+                        <div class="deploy-text">Produces a structured <b>Threat Map</b> and vulnerability hitlogs for residual risk assessment.</div>
                     </div>
                 </div>
 
@@ -254,15 +224,15 @@
                         <div class="agent-icon" style="background: var(--warning);">S</div>
                         <div class="agent-title">The Sentry</div>
                     </div>
-                    <div class="agent-desc">Provides real-time mitigation by intercepting and sanitizing model inputs and outputs.</div>
+                    <div class="agent-desc">Enforces safety guardrails in real-time, protecting both the model and the end-user.</div>
+                    <div class="capability-tags">
+                        <span class="tag">LLM-Guard</span>
+                        <span class="tag">PII Redaction</span>
+                        <span class="tag">Stress Testing</span>
+                    </div>
                     <div class="deployment-info">
-                        <span class="deploy-label">Deployment Options</span>
-                        <div class="deploy-text">Integrated as a <b>Local Library</b>, a standalone <b>Security Proxy</b>, or via <b>System Instruction</b> injection.</div>
-                        <div class="sentry-modes">
-                            <div class="mode-pill">Library</div>
-                            <div class="mode-pill">Proxy</div>
-                            <div class="mode-pill">Prompt</div>
-                        </div>
+                        <span class="deploy-label">Deployment Methods</span>
+                        <div class="deploy-text">Seamlessly integrates as a <b>Local Library</b>, <b>Security Proxy</b>, or <b>Hardened System Prompt</b>.</div>
                     </div>
                 </div>
 
@@ -273,15 +243,20 @@
                         <div class="agent-icon" style="background: var(--success);">A</div>
                         <div class="agent-title">The Auditor</div>
                     </div>
-                    <div class="agent-desc">Evaluates safety performance and compliance through continuous observability and log analysis.</div>
+                    <div class="agent-desc">Synthesizes evidence from all phases into professional, high-fidelity compliance artifacts.</div>
+                    <div class="capability-tags">
+                        <span class="tag">PDF/HTML Export</span>
+                        <span class="tag">Promptfoo Benchmarks</span>
+                        <span class="tag">Drift Analysis</span>
+                    </div>
                     <div class="deployment-info">
-                        <span class="deploy-label">Deployment Method</span>
-                        <div class="deploy-text">Deployed as a <b>Continuous Monitoring Agent</b> that generates NIST reports and serves a live observability dashboard.</div>
+                        <span class="deploy-label">Unified Observability</span>
+                        <div class="deploy-text">Serves an <b>Arize Phoenix</b> dashboard for visual trace monitoring and NIST compliance scoring.</div>
                     </div>
                 </div>
             </div>
 
-            <button class="start-btn" onclick="startDeployment()">Configure Deployment Environment</button>
+            <button class="start-btn" onclick="startDeployment()">Get Your Deployment Package</button>
         </div>
 
         <!-- Section 2: Wizard -->

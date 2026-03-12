@@ -55,4 +55,29 @@ class Sentry:
         sanitized_response, is_valid, risk_score = scan_output(self.output_scanners, prompt, response)
         return sanitized_response, is_valid, risk_score
 
+    def get_about_info(self):
+        """Provides technical and NIST context for the Sentry component."""
+        return {
+            "NIST Function": "MANAGE (ID: MA-1, MA-2)",
+            "Role": "Active Risk Mitigation and Guardrail Enforcement",
+            "Logic": "Utilizes LLM-Guard to scan inputs for injections/PII and outputs for policy violations/hallucinations.",
+            "Workflow": "Map (Identify) -> Measure (Quantify) -> Manage (Act/Enforce)"
+        }
+
+    def get_deployment_guide(self):
+        """Provides architectural guidance on NIST-aligned deployment methods."""
+        return {
+            "1. Library (Native Integration)": "Embed the Sentry directly into your application code. This provides the lowest latency and highest control. Used when you have full access to the application lifecycle.",
+            "2. Middleware / Proxy": "Deploy the Sentry as a standalone service (like a WAF for AI) that sits between the user and the LLM. Ideal for legacy systems or multi-model routing where you cannot change the app code.",
+            "3. Prompt / System Guard": "Inject safety instructions directly into the System Prompt. This is the easiest to implement but the most vulnerable to jailbreaking (as seen in Phase 2). Best used as a secondary layer."
+        }
+
+    def get_status(self):
+        """Returns a summary of the active scanners."""
+        return {
+            "input_scanners": [s.__class__.__name__ for s in self.input_scanners],
+            "output_scanners": [s.__class__.__name__ for s in self.output_scanners],
+            "vault_active": self.vault is not None
+        }
+
 sentry = Sentry()

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # AI-RMF Lifecycle Tools: Bootstrap Script
-# Goal: Setup uv, Python, and the AI-RMF Workspace without sudo.
+# Goal: Setup uv, Python, System Dependencies, and the AI-RMF Workspace.
 
 set -e
 
@@ -13,19 +13,8 @@ NC='\033[0m' # No Color
 
 echo "${BLUE}==> Initializing AI-RMF Lifecycle Workspace...${NC}"
 
-# --- Parse Arguments ---
-FLAVOR="standard"
-SANDBOX="none"
-OFFLINE=false
-
-while [ "$#" -gt 0 ]; do
-  case "$1" in
-    --flavor) FLAVOR="$2"; shift 2 ;;
-    --sandbox) SANDBOX="$2"; shift 2 ;;
-    --offline) OFFLINE=true; shift 1 ;;
-    *) shift ;;
-  esac
-done
+# --- 0. System Dependencies ---
+# (Removed apt-get/brew dependencies to rely on pure Python alternatives via uv)
 
 # --- 1. Check for uv ---
 if ! command -v uv >/dev/null 2>&1; then
@@ -47,10 +36,39 @@ echo "--> ${BLUE}Setting up isolated Python environment (Python 3.11)...${NC}"
 uv venv --python 3.11 .venv
 . .venv/bin/activate
 
-# --- 4. Install Core Dependencies ---
-echo "--> ${BLUE}Installing AI-RMF Open-Source Tools...${NC}"
-# Note: In a real repo, these would be in a requirements.txt
-uv pip install garak promptfoo arize-phoenix llm-guard litellm pydantic python-dotenv questionary psutil
+# --- 4. Install Dependencies (Modular Tiers) ---
+echo "--> ${BLUE}Installing AI-RMF dependencies (Tier: $FLAVOR)...${NC}"
+uv pip install pip python-dotenv questionary litellm pydantic psutil
+
+if [ "$FLAVOR" = "minimal" ]; then
+  echo "--> ${GREEN}Minimal Tier: Governance & Core LLM connectivity only.${NC}"
+fi
+
+if [ "$FLAVOR" = "standard" ] || [ "$FLAVOR" = "full" ]; then
+  echo "--> ${BLUE}Standard Tier: Adding Security Scanning & Guardrails...${NC}"
+  # Pin transformers to 4.48.0 to avoid the TFPreTrainedModel error in 5.x
+  # and the Keras 3 incompatibility issue.
+  uv pip install garak llm-guard transformers==4.48.0 tf-keras
+fi
+
+if [ "$FLAVOR" = "full" ]; then
+  echo "--> ${BLUE}Full Tier: Adding Observatory (Arize-Phoenix) & Export Tools...${NC}"
+  # xhtml2pdf is a pure Python replacement for wkhtmltopdf/pdfkit
+  uv pip install arize-phoenix markdown xhtml2pdf
+fi
+
+# Install promptfoo via npm if available
+if command -v npm >/dev/null 2>&1; then
+  echo "--> ${BLUE}Installing promptfoo globally...${NC}"
+  npm install -g promptfoo --quiet
+else
+  echo "--> ${RED}[Warning] npm not found. Promptfoo benchmarking will require manual installation.${NC}"
+fi
+
+# Pre-download NLP models to prevent runtime 'No module named pip' errors
+echo "--> ${BLUE}Pre-loading NLP models for Sentry...${NC}"
+. .venv/bin/activate
+python3 -m spacy download en_core_web_lg --quiet
 
 # --- 5. Configure Sandbox (Context Only for now) ---
 if [ "$SANDBOX" = "strict" ]; then
@@ -119,13 +137,27 @@ else
   echo "--> ${GREEN}.env file already exists.${NC}"
 fi
 
-# --- 7. Final Hand-off to Librarian ---
+# --- 7. Final Hand-off ---
 echo ""
 echo "${GREEN}==============================================${NC}"
 echo "${GREEN}   AI-RMF WORKSPACE INITIALIZATION COMPLETE   ${NC}"
 echo "${GREEN}==============================================${NC}"
 echo ""
-echo "To begin Phase 1 (Govern) immediately, run:"
-echo "  ${BLUE}./ai-rmf govern${NC}"
-echo ""
-echo "Note: The script will automatically use the .venv created by uv."
+echo "How would you like to proceed?"
+echo "  1) Start Phase 1: GOVERN (Configure your project policies)"
+echo "  2) Run AUTOPILOT (Full end-to-end security pipeline)"
+echo "  3) Exit and run manually later"
+
+read -p "Choice [1-3]: " FINAL_CHOICE
+
+case $FINAL_CHOICE in
+  1)
+    ./ai-rmf govern
+    ;;
+  2)
+    ./ai-rmf autopilot
+    ;;
+  *)
+    echo "Setup complete. You can run the tool anytime using './ai-rmf'."
+    ;;
+esac

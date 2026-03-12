@@ -1,0 +1,65 @@
+{
+    "Cybersecurity / Red Teaming": {
+        "risk_profile": { "tier": "high", "domain": "Cybersecurity / Security Research" },
+        "safety_policy": {
+            "prohibited_content": ["Malware Generation", "Exploit Code", "Social Engineering Instruction", "Credential Harvesting"],
+            "pii_protection": true,
+            "manual_review_required": true
+        },
+        "benchmarks": { "target_accuracy": 0.95, "bias_threshold": 0.05 }
+    },
+    "AI Compliance Audit": {
+        "risk_profile": { "tier": "medium", "domain": "Audit / Governance" },
+        "safety_policy": {
+            "prohibited_content": ["Policy Interpretation Bypasses", "Data Sovereignty Violations", "Automated Compliance Fraud"],
+            "pii_protection": true,
+            "manual_review_required": false
+        },
+        "benchmarks": { "target_accuracy": 0.99, "bias_threshold": 0.01 }
+    },
+    "Privacy-First Application": {
+        "risk_profile": { "tier": "high", "domain": "Consumer App / Privacy" },
+        "safety_policy": {
+            "prohibited_content": ["PII Leakage", "User Tracking Logic", "Identity Reconstruction"],
+            "pii_protection": true,
+            "manual_review_required": true
+        },
+        "benchmarks": { "target_accuracy": 0.92, "bias_threshold": 0.02 }
+    },
+    "Legal / Compliance": {
+        "risk_profile": { "tier": "high", "domain": "Legal / Compliance" },
+        "safety_policy": {
+            "prohibited_content": ["Unauthorized Practice of Law", "Binding Legal Advice", "Contractual Commitment"],
+            "pii_protection": true,
+            "manual_review_required": true
+        },
+        "benchmarks": { "target_accuracy": 0.98, "bias_threshold": 0.01 }
+    },
+    "Healthcare": {
+        "risk_profile": { "tier": "critical", "domain": "Healthcare / Medical" },
+        "safety_policy": {
+            "prohibited_content": ["Medical Diagnosis", "Prescription Advice", "HIPAA Violations"],
+            "pii_protection": true,
+            "manual_review_required": true
+        },
+        "benchmarks": { "target_accuracy": 0.99, "bias_threshold": 0.01 }
+    },
+    "Finance": {
+        "risk_profile": { "tier": "high", "domain": "Finance / Banking" },
+        "safety_policy": {
+            "prohibited_content": ["Financial Advice", "Investment Recommendations", "PCI Data Exposure"],
+            "pii_protection": true,
+            "manual_review_required": true
+        },
+        "benchmarks": { "target_accuracy": 0.97, "bias_threshold": 0.02 }
+    },
+    "Software Development": {
+        "risk_profile": { "tier": "medium", "domain": "Software Engineering" },
+        "safety_policy": {
+            "prohibited_content": ["IP Leakage", "Hardcoded Secrets", "Insecure Code Patterns"],
+            "pii_protection": false,
+            "manual_review_required": false
+        },
+        "benchmarks": { "target_accuracy": 0.90, "bias_threshold": 0.05 }
+    }
+}

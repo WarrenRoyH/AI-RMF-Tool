@@ -13,6 +13,7 @@ class LLMProvider:
             "gemini-1.5-pro": "gemini/gemini-3.1-pro-preview",
             "gemini-3-pro": "gemini/gemini-3.1-pro-preview",
             "gemini-1.5-flash": "gemini/gemini-3.1-flash-lite-preview",
+            "gemini-3-flash-preview": "gemini/gemini-3.1-flash-lite-preview",
             "gpt-4o": "gpt-5.4-pro",
             "claude-3-5-sonnet": "claude-4-sonnet-20260217"
         }
