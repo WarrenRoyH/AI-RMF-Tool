@@ -225,6 +225,7 @@
             margin: 2.5rem 0;
             line-height: 1.5;
             border: 1px solid rgba(255,255,255,0.1);
+            word-break: break-all;
         }
     </style>
 </head>
@@ -331,47 +332,47 @@
             <progress id="progress" value="33" max="100"></progress>
             <div id="q-container">
                 <div class="question active" id="q1">
-                    <label>Where will the AI-RMF workspace reside?</label>
+                    <label>What is your primary objective?</label>
                     <div class="options">
-                        <div class="option" onclick="select(1, 'local', 'Local Machine')">
-                            <div class="option-title">Local Development</div>
-                            <div class="option-desc">Optimized for dev laptops and local model testing.</div>
+                        <div class="option" onclick="select(1, 'minimal', 'Governance Only')">
+                            <div class="option-title">Policy & Governance</div>
+                            <div class="option-desc">Lightweight installation for initializing NIST policies and AI-BOMs.</div>
                         </div>
-                        <div class="option" onclick="select(1, 'cloud', 'Cloud / Hybrid')">
-                            <div class="option-title">Cloud Infrastructure</div>
-                            <div class="option-desc">Designed for persistent AWS/GCP/Azure environments.</div>
+                        <div class="option" onclick="select(1, 'standard', 'Standard Security')">
+                            <div class="option-title">Security & Guardrails</div>
+                            <div class="option-desc">Adds adversarial scanning (Garak) and real-time Sentry protection.</div>
                         </div>
-                        <div class="option" onclick="select(1, 'prem', 'On-Premise')">
-                            <div class="option-title">On-Premise / Air-gapped</div>
-                            <div class="option-desc">Maximum isolation for highly sensitive workloads.</div>
+                        <div class="option" onclick="select(1, 'full', 'Full Compliance')">
+                            <div class="option-title">Full Enterprise Audit</div>
+                            <div class="option-desc">Adds Phoenix observability and professional PDF/HTML report exporting.</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="question" id="q2">
-                    <label>Preferred Isolation Level?</label>
+                    <label>Security & Isolation Level?</label>
                     <div class="options">
-                        <div class="option" onclick="select(2, 'standard', 'Standard')">
-                            <div class="option-title">Standard Execution</div>
+                        <div class="option" onclick="select(2, 'none', 'Standard')">
+                            <div class="option-title">Standard Development</div>
                             <div class="option-desc">Native performance via <code>uv</code> virtual environments.</div>
                         </div>
                         <div class="option" onclick="select(2, 'strict', 'Strict Sandbox')">
-                            <div class="option-title">Hardened Isolation</div>
-                            <div class="option-desc">Force all agents into OS-native security jails.</div>
+                            <div class="option-title">Hardened / Production</div>
+                            <div class="option-desc">Hardens agent execution environments for sensitive data handling.</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="question" id="q3">
-                    <label>Internet Visibility?</label>
+                    <label>Network Connectivity?</label>
                     <div class="options">
-                        <div class="option" onclick="select(3, 'full', 'Full Access')">
+                        <div class="option" onclick="select(3, 'online', 'Full Access')">
                             <div class="option-title">Online / API-Enabled</div>
-                            <div class="option-desc">Allows connection to external LLMs (OpenAI, Gemini).</div>
+                            <div class="option-desc">Allows connection to external LLMs (OpenAI, Gemini, Anthropic).</div>
                         </div>
-                        <div class="option" onclick="select(3, 'none', 'No Access')">
+                        <div class="option" onclick="select(3, 'offline', 'Air-Gapped')">
                             <div class="option-title">Local Only (Offline)</div>
-                            <div class="option-desc">Strictly utilizes local-only models and scanners.</div>
+                            <div class="option-desc">Strictly utilizes local-only models and scanners for maximum privacy.</div>
                         </div>
                     </div>
                 </div>
@@ -389,7 +390,7 @@
 </div>
 
 <script>
-    const state = { infra: '', security: '', network: '' };
+    const state = { flavor: 'standard', sandbox: 'none', offline: false };
 
     function startDeployment() {
         document.getElementById('intro').style.display = 'none';
@@ -397,9 +398,9 @@
     }
 
     function select(step, value, label) {
-        if (step === 1) state.infra = value;
-        if (step === 2) state.security = value;
-        if (step === 3) state.network = value;
+        if (step === 1) state.flavor = value;
+        if (step === 2) state.sandbox = value;
+        if (step === 3) state.offline = (value === 'offline');
 
         const current = document.getElementById(`q${step}`);
         current.classList.remove('active');
@@ -419,17 +420,15 @@
         const result = document.getElementById('result');
         result.classList.add('active');
 
-        let flags = '';
-        if (state.infra === 'prem' || state.network === 'none') {
-            flags += ' --offline';
-        } else if (state.infra === 'cloud') {
-            flags += ' --flavor cloud';
-        }
-        if (state.security === 'strict') {
+        let flags = `--flavor ${state.flavor}`;
+        if (state.sandbox === 'strict') {
             flags += ' --sandbox strict';
         }
+        if (state.offline) {
+            flags += ' --offline';
+        }
 
-        document.getElementById('command').innerText = `curl -sSL https://raw.githubusercontent.com/WarrenRoyH/AI-RMF-Tool/main/bootstrap.sh | sh -s --${flags}`;
+        document.getElementById('command').innerText = `curl -sSL https://raw.githubusercontent.com/WarrenRoyH/AI-RMF-Tool/main/bootstrap.sh | sh -s -- ${flags}`;
     }
 
     function copyCommand() {
