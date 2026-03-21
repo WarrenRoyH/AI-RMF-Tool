@@ -1,5 +1,7 @@
 import os
 import psutil
+import json
+import urllib.request
 from pathlib import Path
 
 class ModelDiscovery:
@@ -14,6 +16,7 @@ class ModelDiscovery:
             Path.home() / ".cache" / "lm-studio" / "models",
             Path("/usr/share/ollama/.ollama/models")
         ]
+        self.ollama_api_url = "http://localhost:11434"
         
     def find_running_models(self):
         """Checks for common AI-serving processes."""
@@ -32,6 +35,37 @@ class ModelDiscovery:
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
         return running
+
+    def verify_ollama_models(self):
+        """Attempts to reach the local Ollama API to list installed models."""
+        models = []
+        try:
+            # Try fetching available tags (models)
+            req = urllib.request.Request(f"{self.ollama_api_url}/api/tags")
+            with urllib.request.urlopen(req, timeout=1) as response:
+                if response.status == 200:
+                    data = json.loads(response.read().decode())
+                    for m in data.get('models', []):
+                        models.append({
+                            "name": m.get('name'),
+                            "size": f"{m.get('size', 0) / (1024**3):.2f} GB",
+                            "status": "Installed"
+                        })
+            
+            # Try fetching currently loaded (running) models
+            req_ps = urllib.request.Request(f"{self.ollama_api_url}/api/ps")
+            with urllib.request.urlopen(req_ps, timeout=1) as response:
+                if response.status == 200:
+                    data = json.loads(response.read().decode())
+                    for m in data.get('models', []):
+                        for installed in models:
+                            if installed['name'] == m.get('name'):
+                                installed['status'] = "Loaded"
+        except Exception:
+            # Ollama not running or API not reachable, or other error
+            pass
+            
+        return models
 
     def scan_local_storage(self):
         """Scans common directories for model files."""
@@ -125,6 +159,7 @@ class ModelDiscovery:
         """Returns a structured summary of findings."""
         return {
             "running": self.find_running_models(),
+            "ollama_models": self.verify_ollama_models(),
             "interfaces": self.scan_network_interfaces(),
             "stored": self.scan_local_storage(),
             "code": self.scan_project_code(),

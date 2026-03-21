@@ -74,3 +74,39 @@ def test_scan_network_interfaces_mock():
         interfaces = discovery.scan_network_interfaces()
         assert len(interfaces) > 0
         assert any(i['name'] == 'Ollama' for i in interfaces)
+
+def test_verify_ollama_models_mock():
+    """Test verification of Ollama models via API mock."""
+    discovery = ModelDiscovery()
+    
+    mock_tags_response = json.dumps({
+        "models": [
+            {"name": "llama3:latest", "size": 8.5 * 1024**3},
+            {"name": "phi3:latest", "size": 2.3 * 1024**3}
+        ]
+    }).encode()
+    
+    mock_ps_response = json.dumps({
+        "models": [
+            {"name": "llama3:latest"}
+        ]
+    }).encode()
+    
+    # Mock urllib.request.urlopen responses
+    mock_resp_tags = MagicMock()
+    mock_resp_tags.status = 200
+    mock_resp_tags.read.return_value = mock_tags_response
+    mock_resp_tags.__enter__.return_value = mock_resp_tags
+    
+    mock_resp_ps = MagicMock()
+    mock_resp_ps.status = 200
+    mock_resp_ps.read.return_value = mock_ps_response
+    mock_resp_ps.__enter__.return_value = mock_resp_ps
+    
+    with patch('urllib.request.urlopen', side_effect=[mock_resp_tags, mock_resp_ps]):
+        models = discovery.verify_ollama_models()
+        assert len(models) == 2
+        assert models[0]['name'] == "llama3:latest"
+        assert models[0]['status'] == "Loaded"
+        assert models[1]['name'] == "phi3:latest"
+        assert models[1]['status'] == "Installed"
