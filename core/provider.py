@@ -137,8 +137,7 @@ class LLMProvider:
     def validate_setup(self):
         if self.target_type == "api":
             if not self.adapter.api_key and "ollama" not in self.model:
-                print(f"Error: API Key missing for model '{self.model}'.")
-                sys.exit(1)
+                raise ValueError(f"API Key missing for model '{self.model}'. Please set the appropriate environment variable (e.g., GOOGLE_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY) in your .env file.")
         return True
 
     def chat(self, messages, use_test_model=False):

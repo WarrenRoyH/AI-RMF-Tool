@@ -264,6 +264,23 @@
         <!-- Section 0: Compliance Dashboard (Dynamic) -->
         <div id="dashboard">
             <h1 style="margin-bottom: 2rem;">Compliance Dashboard</h1>
+            
+            <!-- Project Manifest Info -->
+            <div id="project-info" style="display: none; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; background: var(--primary-light); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--primary);">
+                <div class="metric-card" style="background: transparent; border: none;">
+                    <div class="metric-label" style="color: var(--primary-dark)">Project Name</div>
+                    <div class="metric-val" id="manifest-name" style="font-size: 1.2rem;">N/A</div>
+                </div>
+                <div class="metric-card" style="background: transparent; border: none;">
+                    <div class="metric-label" style="color: var(--primary-dark)">Model ID</div>
+                    <div class="metric-val" id="manifest-model" style="font-size: 1.2rem;">N/A</div>
+                </div>
+                <div class="metric-card" style="background: transparent; border: none;">
+                    <div class="metric-label" style="color: var(--primary-dark)">Risk Tier</div>
+                    <div class="metric-val" id="manifest-tier" style="font-size: 1.2rem; color: var(--accent);">N/A</div>
+                </div>
+            </div>
+
             <div class="score-hero">
                 <div class="score-val" id="db-score">0%</div>
                 <div class="score-label">NIST Compliance Score</div>
@@ -482,6 +499,13 @@
 
     // --- Dashboard Initialization ---
     function initDashboard() {
+        if (typeof PROJECT_MANIFEST !== 'undefined' && PROJECT_MANIFEST) {
+            document.getElementById('project-info').style.display = 'grid';
+            document.getElementById('manifest-name').innerText = PROJECT_MANIFEST.project_name || 'N/A';
+            document.getElementById('manifest-model').innerText = PROJECT_MANIFEST.ai_bom.model_id || 'N/A';
+            document.getElementById('manifest-tier').innerText = (PROJECT_MANIFEST.risk_profile.tier || 'N/A').toUpperCase();
+        }
+
         if (typeof LATEST_AUDIT_DATA !== 'undefined' && LATEST_AUDIT_DATA) {
             document.getElementById('dashboard').classList.add('active');
             document.getElementById('db-score').innerText = LATEST_AUDIT_DATA.score || '0%';

@@ -373,11 +373,19 @@ class Auditor:
             index_path = BASE_DIR / "index.html"
             if index_path.exists():
                 with open(index_path, 'r') as f: content = f.read()
+                # Sync Audit Data
                 if "const LATEST_AUDIT_DATA = " in content:
-                    new_content = re.sub(r"const LATEST_AUDIT_DATA = .*?;", f"const LATEST_AUDIT_DATA = {json.dumps(summary_json)};", content, flags=re.S)
+                    content = re.sub(r"const LATEST_AUDIT_DATA = .*?;", f"const LATEST_AUDIT_DATA = {json.dumps(summary_json)};", content, flags=re.S)
                 else:
-                    new_content = content.replace("</script>", f"\n    const LATEST_AUDIT_DATA = {json.dumps(summary_json)};\n</script>")
-                with open(index_path, 'w') as f: f.write(new_content)
+                    content = content.replace("</script>", f"\n    const LATEST_AUDIT_DATA = {json.dumps(summary_json)};\n</script>")
+                
+                # Sync Project Manifest
+                if "const PROJECT_MANIFEST = " in content:
+                    content = re.sub(r"const PROJECT_MANIFEST = .*?;", f"const PROJECT_MANIFEST = {json.dumps(manifest)};", content, flags=re.S)
+                else:
+                    content = content.replace("</script>", f"\n    const PROJECT_MANIFEST = {json.dumps(manifest)};\n</script>")
+                
+                with open(index_path, 'w') as f: f.write(content)
         except: pass
 
         (self.workspace_dir / "reports" / "latest_audit_report.md").write_text(content_str)
