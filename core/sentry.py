@@ -1,5 +1,10 @@
 import json
+import logging
 from pathlib import Path
+
+# Configure logging to suppress debug noise from llm_guard and its dependencies
+logging.getLogger("llm_guard").setLevel(logging.ERROR)
+
 from llm_guard import scan_prompt, scan_output
 from llm_guard.vault import Vault
 from llm_guard.input_scanners import Anonymize, PromptInjection, TokenLimit, Toxicity

@@ -73,11 +73,11 @@ ai-rmf-tools/
 *   No Docker or Python installation is required (handled automatically by `uv`).
 
 ### Step 0: Initialize & Deploy
-Run the Architect wizard to configure your environment:
+Run the Architect wizard (via bootstrap.sh) or check your environment:
 ```bash
-./ai-rmf init
+./ai-rmf health
 ```
-*The wizard will ask about your infrastructure (Cloud/Local) and model location to set up the appropriate sandbox.*
+*The health check verifies workspace structure, library dependencies, and API connectivity for both primary and test model pools.*
 
 ### Step 1: Start Governance (The Librarian)
 Generate your NIST AI-RMF manifest:

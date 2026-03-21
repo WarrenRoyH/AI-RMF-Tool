@@ -1,10 +1,24 @@
 import os
+
+# --- Log Suppression (NIST-Ready Silent Mode) ---
+# Suppress TensorFlow C++ logs
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# Suppress HuggingFace/Transformers logs
+os.environ['TRANSFORMERS_VERBOSITY'] = 'error'
+
+import logging
+# Configure Python logging to suppress debug noise from external libs
+logging.basicConfig(level=logging.ERROR)
+logging.getLogger("llm_guard").setLevel(logging.ERROR)
+logging.getLogger("transformers").setLevel(logging.ERROR)
+
 import json
 import argparse
 import questionary
 from questionary import Choice
 from pathlib import Path
-from core.provider import provider
+import sys
+from core.provider import provider, QuotaExceededError
 from core.discovery import discovery
 from core.auditor import auditor
 from core.sentry import sentry
@@ -515,6 +529,44 @@ def run_autopilot():
     # 3. MEASURE & 4. REPORT
     run_measure(is_autopilot=True)
 
+def run_health():
+    """Verify environment, dependencies, and API connectivity."""
+    print("\n" + "="*60)
+    print("--> HEALTH CHECK: Environment & Connectivity")
+    print("="*60)
+    
+    # 1. Workspace
+    print(f"--> Workspace: {'[OK]' if WORKSPACE_DIR.exists() else '[MISSING]'}")
+    
+    # 2. Dependencies
+    try:
+        import llm_guard
+        print(f"--> LLM-Guard: [OK]")
+    except ImportError:
+        print("--> LLM-Guard: [MISSING]")
+        
+    # 3. API Connectivity
+    print("--> Testing API Connectivity...")
+    try:
+        test_msg = [{"role": "user", "content": "Ping"}]
+        # Test primary model
+        res = provider.chat(test_msg)
+        if "API Error" in res or "Error" in res:
+            print(f"--> Primary Model ({provider.model}): [FAILED] - {res}")
+        else:
+            print(f"--> Primary Model ({provider.model}): [OK]")
+            
+        # Test test model pool
+        res_test = provider.chat(test_msg, use_test_model=True)
+        if "API Error" in res_test or "Error" in res_test:
+            print(f"--> Test Model Pool: [FAILED] - {res_test}")
+        else:
+            print(f"--> Test Model Pool: [OK]")
+    except Exception as e:
+        print(f"--> API Connectivity: [CRITICAL ERROR] - {e}")
+
+    print("="*60)
+
 def main():
     parser = argparse.ArgumentParser(description="AI-RMF Lifecycle Tools (NIST 1.0)")
     subparsers = parser.add_subparsers(dest="command")
@@ -523,14 +575,24 @@ def main():
     subparsers.add_parser("manage")
     subparsers.add_parser("measure")
     subparsers.add_parser("autopilot")
+    subparsers.add_parser("health")
 
     args = parser.parse_args()
-    if args.command == "govern": run_govern()
-    elif args.command == "map": run_map()
-    elif args.command == "manage": run_manage()
-    elif args.command == "measure": run_measure()
-    elif args.command == "autopilot": run_autopilot()
-    else: parser.print_help()
+    try:
+        if args.command == "govern": run_govern()
+        elif args.command == "map": run_map()
+        elif args.command == "manage": run_manage()
+        elif args.command == "measure": run_measure()
+        elif args.command == "autopilot": run_autopilot()
+        elif args.command == "health": run_health()
+        else: parser.print_help()
+    except QuotaExceededError as e:
+        print(f"\n[QUOTA EXCEEDED]: {e}")
+        print("Daily reasoning limit reached. Stopping cycle for today.")
+        sys.exit(0)
+    except KeyboardInterrupt:
+        print("\nSession interrupted.")
+        sys.exit(0)
 
 if __name__ == "__main__":
     main()

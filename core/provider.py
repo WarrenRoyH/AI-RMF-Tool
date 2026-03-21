@@ -8,6 +8,10 @@ from litellm import completion
 # Load environment variables from .env
 load_dotenv()
 
+class QuotaExceededError(Exception):
+    """Exception raised when API quota is reached (429)."""
+    pass
+
 class BaseAdapter:
     def chat(self, messages):
         raise NotImplementedError("Adapters must implement chat()")
@@ -28,7 +32,10 @@ class APIAdapter(BaseAdapter):
             response = completion(model=self.model, messages=messages)
             return response.choices[0].message.content
         except Exception as e:
-            return f"API Error: {str(e)}"
+            err_msg = str(e)
+            if "429" in err_msg or "rate_limit" in err_msg.lower() or "quota" in err_msg.lower():
+                raise QuotaExceededError(f"Quota reached for {self.model}: {err_msg}")
+            return f"API Error: {err_msg}"
 
 class LocalAdapter(BaseAdapter):
     def __init__(self, endpoint, model):
