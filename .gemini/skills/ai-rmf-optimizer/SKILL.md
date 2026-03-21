@@ -27,7 +27,7 @@ This skill implements a four-phase autonomous improvement cycle.
 ## Phase 4: Integration & Versioning
 1.  **Full Test Suite**: Run the comprehensive test suite to ensure no global regressions.
 2.  **Git Checkpoint**:
-    *   If tests pass: Commit with a descriptive message (`feat: ...`, `fix: ...`).
+    *   If tests pass: Commit with a descriptive message (`feat: ...`, `fix: ...`) and **immediately `git push`** to the remote repository.
     *   If tests fail and cannot be fixed quickly: Roll back using `git restore .` or `git checkout HEAD -- <file>` to return to the last trusted state.
 3.  **Documentation**: Update `README.md` or internal logs if the improvement introduces new capabilities.
 
