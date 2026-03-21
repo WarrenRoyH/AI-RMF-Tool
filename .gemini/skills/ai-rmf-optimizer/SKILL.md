@@ -26,10 +26,11 @@ This skill implements a four-phase autonomous improvement cycle.
 
 ## Phase 4: Integration & Versioning
 1.  **Full Test Suite**: Run the comprehensive test suite to ensure no global regressions.
-2.  **Git Checkpoint**:
-    *   If tests pass: Commit with a descriptive message (`feat: ...`, `fix: ...`) and **immediately `git push`** to the remote repository.
-    *   If tests fail and cannot be fixed quickly: Roll back using `git restore .` or `git checkout HEAD -- <file>` to return to the last trusted state.
-3.  **Documentation**: Update `README.md` or internal logs if the improvement introduces new capabilities.
+2.  **Secret Scan**: Before committing, run `./scripts/secret_scan.sh` on the staged changes to ensure no API keys or sensitive information are present in the diff.
+3.  **Git Checkpoint**:
+    *   If tests and secret scan pass: Commit with a descriptive message (`feat: ...`, `fix: ...`) and **immediately `git push`** to the remote repository.
+    *   If tests fail, secret scan fails, or issues cannot be fixed quickly: Roll back using `git restore .` or `git checkout HEAD -- <file>` to return to the last trusted state.
+4.  **Documentation**: Update `README.md` or internal logs if the improvement introduces new capabilities.
 
 ## Safety & Continuity
 *   **YOLO Mode**: This skill assumes `--approval-mode=yolo` for autonomous execution.
