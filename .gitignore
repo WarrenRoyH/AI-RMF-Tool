@@ -9,6 +9,7 @@ __pycache__/
 workspace/
 
 # Documentation and temporary lists
+ROADMAP.md
 librarian-needs.txt
 agent-list.txt
 GEMINI.md
@@ -35,4 +36,6 @@ htmlcov/
 
 # Skill distribution
 scripts/skills/dist/
+scripts/skills/ai-rmf-optimizer/
+.gemini/skills/ai-rmf-optimizer/
 *.skill
