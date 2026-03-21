@@ -275,45 +275,6 @@ class Auditor:
         met_count = sum(1 for v in cat_data.values() if v[0] == "✅ MET")
         total_score = (met_count / len(cat_data)) * 100
 
-        # --- Generate Summary JSON for Dashboard (Universal Interface Parity) ---
-        summary_json = {
-            "project_name": manifest.get('project_name'),
-            "score": f"{total_score:.1f}%",
-            "timestamp": datetime.now().isoformat(),
-            "status": 'CAUTION' if garak_hits > 0 or total_score < 80 else 'STABLE',
-            "metrics": {
-                "accuracy": actual_accuracy,
-                "bias": bias_score,
-                "garak_hits": garak_hits,
-                "input_blocks": input_blocks,
-                "compliance_score": f"{total_score:.1f}%"
-            }
-        }
-
-        # --- Render HTML for Dashboard ---
-        content_str = "\n".join(report_content)
-        try:
-            import markdown
-            summary_json["report_html"] = markdown.markdown(content_str, extensions=['tables', 'fenced_code'])
-        except:
-            summary_json["report_html"] = "<p>Markdown library not installed. Please view the .md report in workspace/reports.</p>"
-
-        summary_path = self.workspace_dir / "reports" / "summary.json"
-        with open(summary_path, 'w') as f:
-            json.dump(summary_json, f, indent=4)
-
-        # --- Universal Interface Synchronization ---
-        try:
-            index_path = BASE_DIR / "index.html"
-            if index_path.exists():
-                with open(index_path, 'r') as f: content = f.read()
-                if "const LATEST_AUDIT_DATA = " in content:
-                    new_content = re.sub(r"const LATEST_AUDIT_DATA = .*?;", f"const LATEST_AUDIT_DATA = {json.dumps(summary_json)};", content, flags=re.S)
-                else:
-                    new_content = content.replace("</script>", f"\n    const LATEST_AUDIT_DATA = {json.dumps(summary_json)};\n</script>")
-                with open(index_path, 'w') as f: f.write(new_content)
-        except: pass
-
         # --- Generate Report Content ---
         report_content = [
             f"# NIST AI RMF Compliance Report: {manifest.get('project_name')}",
@@ -362,18 +323,67 @@ class Auditor:
             for v in top_vulns:
                 report_content.append(f"- {v}")
 
+        roadmap = []
         report_content.append("\n---\n## 3. NIST REMEDIATION ROADMAP")
         if garak_hits > 0:
-            report_content.append(f"- **[MP-3] High Priority:** Harden system prompts against the top {len(garak_details)} failure vectors identified in the Adversarial Breakdown.")
+            msg = f"**[MP-3] High Priority:** Harden system prompts against the top {len(garak_details)} failure vectors identified in the Adversarial Breakdown."
+            report_content.append(f"- {msg}")
+            roadmap.append(msg)
         if "FAIL" in supply_chain_msg:
-            report_content.append(f"- **[GV-5] Medium Priority:** Execute `uv pip install --upgrade` for identified vulnerable packages.")
+            msg = "**[GV-5] Medium Priority:** Execute `uv pip install --upgrade` for identified vulnerable packages."
+            report_content.append(f"- {msg}")
+            roadmap.append(msg)
         if accuracy_pass == "❌":
-            report_content.append("- **[ME-2] Critical:** Adjust model parameters or use a more capable model to meet the 99% accuracy target.")
+            msg = "**[ME-2] Critical:** Adjust model parameters or use a more capable model to meet the target benchmarks."
+            report_content.append(f"- {msg}")
+            roadmap.append(msg)
 
         content_str = "\n".join(report_content)
+
+        # --- Generate Summary JSON for Dashboard (Universal Interface Parity) ---
+        summary_json = {
+            "project_name": manifest.get('project_name'),
+            "score": f"{total_score:.1f}%",
+            "timestamp": datetime.now().isoformat(),
+            "status": 'CAUTION' if garak_hits > 0 or total_score < 80 else 'STABLE',
+            "metrics": {
+                "accuracy": actual_accuracy,
+                "bias": bias_score,
+                "garak_hits": garak_hits,
+                "input_blocks": input_blocks,
+                "compliance_score": f"{total_score:.1f}%"
+            },
+            "roadmap": roadmap,
+            "top_vulns": top_vulns
+        }
+
+        # --- Render HTML for Dashboard ---
+        try:
+            import markdown
+            summary_json["report_html"] = markdown.markdown(content_str, extensions=['tables', 'fenced_code'])
+        except:
+            summary_json["report_html"] = "<p>Markdown library not installed. Please view the .md report in workspace/reports.</p>"
+
+        summary_path = self.workspace_dir / "reports" / "summary.json"
+        with open(summary_path, 'w') as f:
+            json.dump(summary_json, f, indent=4)
+
+        # --- Universal Interface Synchronization ---
+        try:
+            index_path = BASE_DIR / "index.html"
+            if index_path.exists():
+                with open(index_path, 'r') as f: content = f.read()
+                if "const LATEST_AUDIT_DATA = " in content:
+                    new_content = re.sub(r"const LATEST_AUDIT_DATA = .*?;", f"const LATEST_AUDIT_DATA = {json.dumps(summary_json)};", content, flags=re.S)
+                else:
+                    new_content = content.replace("</script>", f"\n    const LATEST_AUDIT_DATA = {json.dumps(summary_json)};\n</script>")
+                with open(index_path, 'w') as f: f.write(new_content)
+        except: pass
+
         (self.workspace_dir / "reports" / "latest_audit_report.md").write_text(content_str)
         (self.workspace_dir / "reports" / f"audit_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md").write_text(content_str)
         return "NIST Compliance Report Updated with advanced metrics."
+
 
     def generate_nutrition_label(self):
         if not self.manifest_path.exists(): return "Error: Manifest missing."

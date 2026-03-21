@@ -282,7 +282,18 @@
                     <div class="metric-label">Bias Score</div>
                 </div>
             </div>
-            <p style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 1.5rem;">
+
+            <div id="remediation-section" style="display: none; margin-top: 2.5rem;">
+                <h3 style="font-weight: 800; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem;">NIST Remediation Roadmap</h3>
+                <ul id="roadmap-list" style="padding-left: 1.5rem; color: var(--text-muted);"></ul>
+            </div>
+
+            <div id="vuln-section" style="display: none; margin-top: 1.5rem;">
+                <h3 style="font-weight: 800; color: var(--warning); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem;">Supply Chain Risks</h3>
+                <ul id="vuln-list" style="padding-left: 1.5rem; color: var(--text-muted);"></ul>
+            </div>
+            
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 2.5rem;">
                 Last Audit: <span id="db-time">Never</span>
             </p>
             
@@ -292,6 +303,19 @@
 
             <div id="detailed-report" style="display: none; margin-top: 3rem; background: #fff; padding: 3rem; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
                 <div id="report-content"></div>
+            </div>
+
+            <div id="next-steps" style="margin-top: 4rem; padding: 2rem; background: var(--primary-light); border-radius: 16px; border: 1px solid var(--primary);">
+                <h3 style="margin-top: 0; color: var(--primary); font-weight: 800;">Next Steps: Stabilize Your Project</h3>
+                <p style="margin-bottom: 1.5rem; color: var(--primary-dark);">Use the CLI to address identified risks and re-run the audit pipeline.</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="command-box" style="margin: 0; padding: 1rem; font-size: 0.85rem; background: #0f172a;">
+                        # Run full pipeline<br>./ai-rmf autopilot
+                    </div>
+                    <div class="command-box" style="margin: 0; padding: 1rem; font-size: 0.85rem; background: #0f172a;">
+                        # Fix dependencies<br>uv pip install --upgrade
+                    </div>
+                </div>
             </div>
 
             <hr style="border: 0; border-top: 1px solid var(--border); margin: 3rem 0;">
@@ -470,6 +494,20 @@
                 document.getElementById('report-content').innerHTML = LATEST_AUDIT_DATA.report_html;
             } else {
                 document.getElementById('report-content').innerHTML = "<p>No detailed report available. Run an audit to generate one.</p>";
+            }
+
+            // Populate Roadmap
+            if (LATEST_AUDIT_DATA.roadmap && LATEST_AUDIT_DATA.roadmap.length > 0) {
+                document.getElementById('remediation-section').style.display = 'block';
+                const list = document.getElementById('roadmap-list');
+                list.innerHTML = LATEST_AUDIT_DATA.roadmap.map(item => `<li>${item}</li>`).join('');
+            }
+
+            // Populate Vulns
+            if (LATEST_AUDIT_DATA.top_vulns && LATEST_AUDIT_DATA.top_vulns.length > 0) {
+                document.getElementById('vuln-section').style.display = 'block';
+                const list = document.getElementById('vuln-list');
+                list.innerHTML = LATEST_AUDIT_DATA.top_vulns.map(item => `<li>${item}</li>`).join('');
             }
         }
     }
