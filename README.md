@@ -6,6 +6,16 @@ This project provides a modular suite of open-source agents that handle the **Go
 
 ---
 
+## Core Design Philosophy: Zero-Friction UX
+This toolkit is built on the principle that **compliance should not require a PhD in AI or Cybersecurity**. The guiding directive for this application is extreme user-friendliness. Anyone, technical or not, should be able to deploy, configure, and understand the output of these tools. 
+
+All future development, including autonomous optimization by agents, must prioritize:
+1. **Plain Language:** Avoiding overly dense technical jargon in logs, terminal outputs, and reports.
+2. **One-Click Deployments:** Keeping the setup process as close to "Zero-Install" as possible.
+3. **Intuitive Personas:** Ensuring the agents (Librarian, Sentry, Auditor) communicate and act in ways that are easily understood by non-technical stakeholders.
+
+---
+
 ## 1. What It Does
 The AI-RMF Lifecycle Tools transform high-level NIST governance principles into technical reality. The toolkit provides:
 *   **Interactive Governance:** A "Librarian" persona that interviews stakeholders to generate an AI-BOM and risk manifest.
