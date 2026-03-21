@@ -100,10 +100,32 @@ class ModelDiscovery:
             
         return purpose_hints
 
+    def scan_network_interfaces(self):
+        """Scans common ports for AI services and web applications."""
+        import socket
+        targets = [
+            ("Ollama", 11434),
+            ("vLLM / OpenAI-Compat", 8000),
+            ("LM Studio", 1234),
+            ("TGW / WebUI", 7860),
+            ("Local Analytics App", 3000),
+            ("Local Dev App", 5000),
+            ("Sentry Proxy", 8080)
+        ]
+        
+        found_interfaces = []
+        for name, port in targets:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(0.5)
+                if s.connect_ex(('127.0.0.1', port)) == 0:
+                    found_interfaces.append({"name": name, "port": port, "url": f"http://localhost:{port}"})
+        return found_interfaces
+
     def get_discovery_report(self):
         """Returns a structured summary of findings."""
         return {
             "running": self.find_running_models(),
+            "interfaces": self.scan_network_interfaces(),
             "stored": self.scan_local_storage(),
             "code": self.scan_project_code(),
             "purpose_hints": self.detect_purpose()

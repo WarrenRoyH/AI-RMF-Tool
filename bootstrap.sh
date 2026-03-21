@@ -5,6 +5,10 @@
 
 set -e
 
+# --- 0. Set Defaults ---
+FLAVOR=${FLAVOR:-"full"}
+SANDBOX=${SANDBOX:-"none"}
+
 # --- Colors for Output ---
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -46,9 +50,9 @@ fi
 
 if [ "$FLAVOR" = "standard" ] || [ "$FLAVOR" = "full" ]; then
   echo "--> ${BLUE}Standard Tier: Adding Security Scanning & Guardrails...${NC}"
-  # Pin transformers to 4.48.0 to avoid the TFPreTrainedModel error in 5.x
-  # and the Keras 3 incompatibility issue.
-  uv pip install garak llm-guard transformers==4.48.0 tf-keras
+  # Use transformers 4.57.6 to fix CVEs while maintaining compatibility
+  # with llm-guard which requires the 4.x TFPreTrainedModel.
+  uv pip install garak llm-guard transformers==4.57.6 tf-keras pip-audit spacy
 fi
 
 if [ "$FLAVOR" = "full" ]; then

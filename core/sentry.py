@@ -15,6 +15,7 @@ class Sentry:
         self.vault = Vault()
         self.input_scanners = []
         self.output_scanners = []
+        self.shadow_mode = False
         self._load_policy()
 
     def _load_policy(self):
@@ -27,6 +28,9 @@ class Sentry:
 
         with open(self.manifest_path, 'r') as f:
             policy = json.load(f)
+
+        # Load shadow mode setting
+        self.shadow_mode = policy.get("safety_policy", {}).get("shadow_mode", False)
 
         # 1. Input Scanners (Protecting the Model)
         self.input_scanners.append(PromptInjection())

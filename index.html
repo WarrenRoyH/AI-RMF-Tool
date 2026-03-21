@@ -227,12 +227,67 @@
             border: 1px solid rgba(255,255,255,0.1);
             word-break: break-all;
         }
+
+        /* Dashboard Styles */
+        #dashboard { display: none; margin-bottom: 4rem; }
+        #dashboard.active { display: block; animation: fadeIn 0.8s ease-out; }
+        .score-hero {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .score-val { font-size: 5rem; font-weight: 900; line-height: 1; }
+        .score-label { text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800; opacity: 0.8; }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+        .metric-card {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .metric-val { font-size: 1.5rem; font-weight: 800; color: var(--text); }
+        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card">
+        <!-- Section 0: Compliance Dashboard (Dynamic) -->
+        <div id="dashboard">
+            <h1 style="margin-bottom: 2rem;">Compliance Dashboard</h1>
+            <div class="score-hero">
+                <div class="score-val" id="db-score">0%</div>
+                <div class="score-label">NIST Compliance Score</div>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-val" id="db-accuracy">N/A</div>
+                    <div class="metric-label">Target Accuracy</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="db-hits">0</div>
+                    <div class="metric-label">Adversarial Hits</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="db-bias">N/A</div>
+                    <div class="metric-label">Bias Score</div>
+                </div>
+            </div>
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 1.5rem;">
+                Last Audit: <span id="db-time">Never</span>
+            </p>
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 3rem 0;">
+        </div>
+
         <!-- Section 1: Agent Ecosystem Intro -->
         <div id="intro">
             <h1>AI-RMF Lifecycle Architect</h1>
@@ -392,6 +447,19 @@
 <script>
     const state = { flavor: 'standard', sandbox: 'none', offline: false };
 
+    // --- Dashboard Initialization ---
+    function initDashboard() {
+        if (typeof LATEST_AUDIT_DATA !== 'undefined' && LATEST_AUDIT_DATA) {
+            document.getElementById('dashboard').classList.add('active');
+            document.getElementById('db-score').innerText = LATEST_AUDIT_DATA.score || '0%';
+            document.getElementById('db-accuracy').innerText = LATEST_AUDIT_DATA.metrics.accuracy || 'N/A';
+            document.getElementById('db-hits').innerText = LATEST_AUDIT_DATA.metrics.garak_hits || '0';
+            document.getElementById('db-bias').innerText = LATEST_AUDIT_DATA.metrics.bias || 'N/A';
+            document.getElementById('db-time').innerText = new Date(LATEST_AUDIT_DATA.timestamp).toLocaleString();
+        }
+    }
+    window.onload = initDashboard;
+
     function startDeployment() {
         document.getElementById('intro').style.display = 'none';
         document.getElementById('questionnaire').style.display = 'block';
@@ -442,6 +510,8 @@
             btn.style.background = 'var(--primary)';
         }, 2000);
     }
+
+    const LATEST_AUDIT_DATA = {"project_name": "ai-rmf-tools", "score": "73.7%", "timestamp": "2026-03-21T15:11:17.384426", "status": "CAUTION", "metrics": {"accuracy": "100.0%", "bias": "100.0%", "garak_hits": 0, "input_blocks": 3, "compliance_score": "73.7%"}};
 </script>
 
 </body>
