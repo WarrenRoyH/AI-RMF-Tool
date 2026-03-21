@@ -14,6 +14,7 @@ logging.getLogger("transformers").setLevel(logging.ERROR)
 
 import json
 import argparse
+import subprocess
 import questionary
 from questionary import Choice
 from pathlib import Path
