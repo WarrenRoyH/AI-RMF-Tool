@@ -34,8 +34,7 @@ htmlcov/
 **/config.local.json
 **/config.private.json
 
-# Skill distribution
-scripts/skills/dist/
-scripts/skills/ai-rmf-optimizer/
+# Skill distribution & local scripts
+scripts/
 .gemini/skills/ai-rmf-optimizer/
 *.skill
