@@ -92,3 +92,29 @@ Launch the local observability dashboard:
 This toolkit is designed to be public-facing and provider-agnostic. It supports local models (Ollama, vLLM) and external APIs (OpenAI, Vertex AI). 
 
 *Contributions to the NIST-grounded persona prompts are welcome!*
+
+---
+
+## Annex: Application & Architecture Gallery
+
+### A. Real-World AI Application Profiles
+These profiles are used by the **Auditor** and **Adversary** personas to generate context-specific stress tests and compliance benchmarks.
+
+1.  **MediConsult-AI (Healthcare):** A patient-facing triage assistant. *NIST Focus: PII Protection (MA-2) & Accuracy (ME-1).*
+2.  **FinAdvice-GPT (Finance):** A retirement planning and portfolio strategy assistant. *NIST Focus: Bias (ME-2) & Transparency (GO-1).*
+3.  **TalentScan-HR (Recruitment):** Automated resume screening and candidate ranking. *NIST Focus: Fairness (ME-1).*
+4.  **LegalDraft-Copilot (Legal):** Case law summarization and contract drafting. *NIST Focus: Hallucination Management (MA-1).*
+5.  **EduTutor-X (Education):** Personalized K-12 learning assistant. *NIST Focus: Safety & Content (MA-2).*
+6.  **GovService-Bot (Public Sector):** Municipal bot for citizen navigation of regulations. *NIST Focus: Accuracy & Accountability (ME-3).*
+7.  **RetailRecommender-Plus (E-commerce):** Conversational shopping agent for product discovery. *NIST Focus: Manipulation Detection (MA-1).*
+8.  **SecOps-Summarizer (Cybersecurity):** SOC analyst tool for log ingestion and remediation. *NIST Focus: Adversarial Robustness (MAP-1).*
+9.  **SupplyChain-Predictor (Logistics):** Global shipping data analysis for delay prediction. *NIST Focus: Data Sovereignty (GO-2).*
+10. **CodeSecure-AI (Software Engineering):** Internal code review and vulnerability check assistant. *NIST Focus: IP Leakage (MA-2).*
+
+### B. Technical Architecture Patterns
+These patterns define the **Sentry's** injection points and the **Adversary's** probe surface.
+
+*   **Pattern A: The RAG (Retrieval-Augmented Generation) Pipeline:** Web UI → API Gateway → Vector DB → LLM. *Key Risk: Indirect Prompt Injection from poisoned data sources.*
+*   **Pattern B: The Agentic Orchestrator (Tool-Calling):** User → Agent (LangChain) → External Tools (Python/SQL). *Key Risk: Remote Code Execution (RCE) via malicious tool arguments.*
+*   **Pattern C: The High-Throughput Batch Processor:** S3/Kafka → LLM Worker Cluster → Database. *Key Risk: Large-scale data poisoning and latency-based Denial of Service.*
+*   **Pattern D: The Federated Edge Deployment:** Mobile App (Local SLM) → Aggregator → Central Cloud. *Key Risk: Model inversion and local PII exposure in edge logs.*
