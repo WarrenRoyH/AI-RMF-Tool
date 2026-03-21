@@ -14,6 +14,7 @@ agent-list.txt
 GEMINI.md
 
 # Development / OS artifacts
+runner.sh
 .DS_Store
 node_modules/
 .pytest_cache/

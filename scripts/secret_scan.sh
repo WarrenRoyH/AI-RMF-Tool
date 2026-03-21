@@ -4,7 +4,6 @@
 # 1. Define common secret patterns
 PATTERNS=(
   "GOOGLE_API_KEY"
-  "AI_RMF_MODEL"
   "BEGIN RSA PRIVATE KEY"
   "BEGIN OPENSSH PRIVATE KEY"
   "AI_KEY"

@@ -7,10 +7,22 @@ description: Autonomous loop for testing, designing, coding, and integrating imp
 
 This skill implements a four-phase autonomous improvement cycle.
 
+## Project Context & Baselines
+To avoid redundant discovery in every cycle, assume the following project state:
+*   **Primary Entry Point**: `./ai-rmf` (Shell wrapper for `python3 ai_rmf_core.py`).
+*   **Subcommands**: `govern`, `map`, `manage`, `measure`, `autopilot`.
+*   **Architecture**:
+    *   `core/`: Core logic (discovery, auditor, sentry, inspector, provider).
+    *   `librarian/`: Prompt templates for risk governance.
+    *   `workspace/`: Local data storage (logs, reports, policies, manifest).
+    *   `config/`: Template configurations.
+*   **Testing**: No standard `pytest` suite is currently established. Validation is performed via subcommand execution (e.g., `./ai-rmf govern` or `./ai-rmf autopilot`) and checking the outputs in `workspace/`.
+*   **Environment**: Managed via `bootstrap.sh` and `uv` in `.venv`.
+
 ## Phase 1: Testing & Baselining
-1.  **Identify Entry Points**: Locate test suites or execution scripts (e.g., `bootstrap.sh`, `pytest`, or manual verification scripts).
-2.  **Establish Baseline**: Run all existing tests. If any fail, the cycle must prioritize fixing existing regressions before proceeding.
-3.  **Snapshot State**: Ensure the Git working directory is clean or documented (`git status`).
+1.  **Skip Initial Discovery**: Use the established project state in the "Project Context & Baselines" section. Do not re-examine basic file structures unless a change has occurred.
+2.  **Establish Baseline**: Run `./ai-rmf --help` and a quick dry-run of a core subcommand (e.g., `./ai-rmf govern --help`) to verify the environment is active. Prioritize fixing regressions if found.
+3.  **Snapshot State**: Check `git status` to ensure a clean starting point.
 
 ## Phase 2: Design Improvements
 1.  **Analyze Feedback**: Review test results, `TODO` comments, and architecture patterns.
