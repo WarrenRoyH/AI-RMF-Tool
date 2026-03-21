@@ -33,5 +33,8 @@ This skill implements a four-phase autonomous improvement cycle.
 
 ## Safety & Continuity
 *   **YOLO Mode**: This skill assumes `--approval-mode=yolo` for autonomous execution.
-*   **Quota Management**: If an API quota error occurs, the process will naturally terminate. Ensure the last action was a Git checkpoint to avoid losing work.
+*   **Model Tiering**: 
+    *   **The Optimizer (Agent)**: MUST ONLY use `gemini-3.1-pro` for high-reasoning tasks.
+    *   **Technical Benchmarks (App)**: MUST utilize the project's internal `use_test_model=True` flag to cycle through Flash models (`3.1 Flash-Lite`, `3 Flash`, `2.5 Flash`, `2.5 Flash-Lite`) for high-volume technical tests (Promptfoo, Garak, security probes).
+*   **Quota Management**: If the `gemini-3.1-pro` API quota is reached (evidenced by 429 errors or exhaustion messages), the cycle MUST terminate immediately for the day. Ensure the last action was a Git checkpoint to avoid losing work.
 *   **Loop Condition**: Continue this cycle until no further immediate improvements are identified or external limits are reached.
