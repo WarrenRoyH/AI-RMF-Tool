@@ -58,12 +58,28 @@ class RedTeamer:
         print("="*40)
 
         # 3. Execution (Simulated or triggered if command found)
-        if "garak" in plan.lower() or "promptfoo" in plan.lower():
-            print("\n[!] [EXECUTION]: Red Teamer plan contains actionable commands.")
-            # We don't automatically run arbitrary commands from the LLM for safety, 
-            # but we can trigger our internal standardized probes.
-            return "Red Team Plan generated and dataset ready."
+        execution_results = []
+        if "garak" in plan.lower():
+            from core.auditor import auditor
+            print("\n[!] [EXECUTION]: Triggering automated Garak probe based on plan...")
+            cmd = auditor.generate_garak_command(slim_mode=True)
+            if cmd:
+                print(f"Running: {cmd}")
+                os.system(cmd)
+                execution_results.append("Garak probe executed.")
         
-        return "Red Team session complete."
+        if "promptfoo" in plan.lower():
+            from core.auditor import auditor
+            print("\n[!] [EXECUTION]: Triggering automated Promptfoo evaluation based on plan...")
+            cmd = auditor.generate_promptfoo_config(slim_mode=True)
+            if cmd:
+                print(f"Running: {cmd}")
+                os.system(cmd)
+                execution_results.append("Promptfoo evaluation executed.")
+
+        if execution_results:
+            return f"Red Team session complete. Actions: {', '.join(execution_results)}"
+        
+        return "Red Team Plan generated and dataset ready."
 
 red_teamer = RedTeamer()

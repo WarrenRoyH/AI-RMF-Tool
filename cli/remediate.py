@@ -34,3 +34,13 @@ def run_remediate():
             print("-"*40)
             print(f.read())
             print("-"*40)
+
+        # In a real CLI, we might use questionary.confirm
+        # But for autonomous cycles, we apply it.
+        import os
+        if os.getenv("AI_RMF_YOLO") == "true":
+            print("\n[YOLO]: Applying patch automatically...")
+            res = remediator.apply_patch()
+            print(f"--> [APPLIED]: {res}")
+        else:
+            print("\n[INFO]: Run with AI_RMF_YOLO=true to apply the patch automatically.")

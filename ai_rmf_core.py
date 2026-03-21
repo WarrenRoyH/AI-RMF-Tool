@@ -23,6 +23,7 @@ from cli.manage import run_manage
 from cli.measure import run_measure
 from cli.remediate import run_remediate
 from cli.red_team import run_red_team
+from cli.report import run_report
 from cli.autopilot import run_autopilot
 from cli.health import run_health
 
@@ -40,6 +41,9 @@ def main():
     subparsers.add_parser("remediate")
     subparsers.add_parser("red_teamer")
     
+    report_parser = subparsers.add_parser("report")
+    report_parser.add_argument("--format", choices=["html", "pdf"], default="html", help="Report format (default: html)")
+
     autopilot_parser = subparsers.add_parser("autopilot")
     autopilot_parser.add_argument("--dry-run", action="store_true", help="Run without making external changes or API calls")
     
@@ -54,6 +58,7 @@ def main():
             run_measure(is_autopilot=args.autopilot, assessment_type=args.type)
         elif args.command == "remediate": run_remediate()
         elif args.command == "red_teamer": run_red_team()
+        elif args.command == "report": run_report(report_format=args.format)
         elif args.command == "autopilot": run_autopilot(is_dry_run=args.dry_run)
         elif args.command == "health": run_health()
         else: parser.print_help()
