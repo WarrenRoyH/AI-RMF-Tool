@@ -289,6 +289,15 @@ class Auditor:
                 "compliance_score": f"{total_score:.1f}%"
             }
         }
+
+        # --- Render HTML for Dashboard ---
+        content_str = "\n".join(report_content)
+        try:
+            import markdown
+            summary_json["report_html"] = markdown.markdown(content_str, extensions=['tables', 'fenced_code'])
+        except:
+            summary_json["report_html"] = "<p>Markdown library not installed. Please view the .md report in workspace/reports.</p>"
+
         summary_path = self.workspace_dir / "reports" / "summary.json"
         with open(summary_path, 'w') as f:
             json.dump(summary_json, f, indent=4)

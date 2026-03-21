@@ -23,6 +23,7 @@ from core.discovery import discovery
 from core.auditor import auditor
 from core.sentry import sentry
 from core.inspector import inspector
+from core.red_teamer import red_teamer
 
 # Define Paths
 WORKSPACE_DIR = Path("workspace")
@@ -504,6 +505,30 @@ def run_measure(is_autopilot=False):
             cmd = auditor.generate_promptfoo_config()
             os.system(cmd)
 
+# --- Persona: Red Teamer (Map/Measure) ---
+def run_red_team(target_url=None):
+    check_setup()
+    print("\n" + "="*60)
+    print("--> Persona: RED TEAMER (Adversarial Stress Test)")
+    print("="*60)
+    
+    # If no target provided, try to find one in manifest or env
+    if not target_url:
+        if MANIFEST_PATH.exists():
+            with open(MANIFEST_PATH, 'r') as f:
+                manifest = json.load(f)
+                target_url = manifest.get('ai_bom', {}).get('target_url')
+        
+        if not target_url:
+            target_url = os.getenv("AI_RMF_TARGET_URL")
+
+    # Interactive prompt for target URL if still missing
+    if not target_url:
+        target_url = questionary.text("Enter target endpoint URL (or press Enter for Local):").ask()
+
+    res = red_teamer.run_stress_test(target_url=target_url)
+    print(f"\n--> [RESULT]: {res}")
+
 # --- Persona: Autopilot ---
 def run_autopilot():
     check_setup()
@@ -574,6 +599,7 @@ def main():
     subparsers.add_parser("map")
     subparsers.add_parser("manage")
     subparsers.add_parser("measure")
+    subparsers.add_parser("red_teamer")
     subparsers.add_parser("autopilot")
     subparsers.add_parser("health")
 
@@ -583,6 +609,7 @@ def main():
         elif args.command == "map": run_map()
         elif args.command == "manage": run_manage()
         elif args.command == "measure": run_measure()
+        elif args.command == "red_teamer": run_red_team()
         elif args.command == "autopilot": run_autopilot()
         elif args.command == "health": run_health()
         else: parser.print_help()

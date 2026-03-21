@@ -285,6 +285,15 @@
             <p style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 1.5rem;">
                 Last Audit: <span id="db-time">Never</span>
             </p>
+            
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="start-btn" onclick="toggleReport()" style="max-width: 300px; padding: 1rem; font-size: 1rem;">View Detailed NIST Report</button>
+            </div>
+
+            <div id="detailed-report" style="display: none; margin-top: 3rem; background: #fff; padding: 3rem; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+                <div id="report-content"></div>
+            </div>
+
             <hr style="border: 0; border-top: 1px solid var(--border); margin: 3rem 0;">
         </div>
 
@@ -456,9 +465,25 @@
             document.getElementById('db-hits').innerText = LATEST_AUDIT_DATA.metrics.garak_hits || '0';
             document.getElementById('db-bias').innerText = LATEST_AUDIT_DATA.metrics.bias || 'N/A';
             document.getElementById('db-time').innerText = new Date(LATEST_AUDIT_DATA.timestamp).toLocaleString();
+            
+            if (LATEST_AUDIT_DATA.report_html) {
+                document.getElementById('report-content').innerHTML = LATEST_AUDIT_DATA.report_html;
+            } else {
+                document.getElementById('report-content').innerHTML = "<p>No detailed report available. Run an audit to generate one.</p>";
+            }
         }
     }
     window.onload = initDashboard;
+
+    function toggleReport() {
+        const report = document.getElementById('detailed-report');
+        if (report.style.display === 'none') {
+            report.style.display = 'block';
+            report.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            report.style.display = 'none';
+        }
+    }
 
     function startDeployment() {
         document.getElementById('intro').style.display = 'none';
