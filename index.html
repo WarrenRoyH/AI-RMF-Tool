@@ -309,11 +309,11 @@
                 <h3 style="margin-top: 0; color: var(--primary); font-weight: 800;">Next Steps: Stabilize Your Project</h3>
                 <p style="margin-bottom: 1.5rem; color: var(--primary-dark);">Use the CLI to address identified risks and re-run the audit pipeline.</p>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="command-box" style="margin: 0; padding: 1rem; font-size: 0.85rem; background: #0f172a;">
+                    <div class="command-box" style="margin: 0; padding: 1rem; font-size: 0.85rem; background: #0f172a; cursor: pointer;" onclick="copyToClipboard('./ai-rmf autopilot')">
                         # Run full pipeline<br>./ai-rmf autopilot
                     </div>
-                    <div class="command-box" style="margin: 0; padding: 1rem; font-size: 0.85rem; background: #0f172a;">
-                        # Fix dependencies<br>uv pip install --upgrade
+                    <div class="command-box" style="margin: 0; padding: 1rem; font-size: 0.85rem; background: #0f172a; cursor: pointer;" onclick="copyToClipboard('./ai-rmf remediate')">
+                        # Fix vulnerabilities<br>./ai-rmf remediate
                     </div>
                 </div>
             </div>
@@ -560,6 +560,11 @@
         }
 
         document.getElementById('command').innerText = `curl -sSL https://raw.githubusercontent.com/WarrenRoyH/AI-RMF-Tool/main/bootstrap.sh | sh -s -- ${flags}`;
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text);
+        alert('Command copied to clipboard: ' + text);
     }
 
     function copyCommand() {
