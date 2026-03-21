@@ -16,7 +16,8 @@ This skill implements a four-phase autonomous improvement cycle.
 1.  **Analyze Feedback**: Review test results, `TODO` comments, and architecture patterns.
 2.  **Architectural Alignment**: Propose changes that align with existing modular patterns (e.g., `core/`, `librarian/`).
 3.  **UX & Accessibility First**: Actively seek ways to make the toolkit more intuitive for non-technical users. Prioritize plain-language outputs, interactive/zero-friction setup, and hiding complex technical hurdles behind intelligent defaults.
-4.  **Risk Assessment**: Identify components that are high-risk for breakage.
+4.  **Hybrid Interface Parity**: Ensure that any new functionality is accessible via both the CLI and a local-first GUI (e.g., `index.html`). The optimizer should actively look for ways to synchronize the state between the Python backend and the HTML frontend to maintain a "Universal Interface" experience.
+5.  **Risk Assessment**: Identify components that are high-risk for breakage.
 
 ## Phase 3: Code Development
 1.  **Incremental Edits**: Apply changes using surgical tools (`replace`, `write_file`).

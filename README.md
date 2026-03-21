@@ -13,6 +13,7 @@ All future development, including autonomous optimization by agents, must priori
 1. **Plain Language:** Avoiding overly dense technical jargon in logs, terminal outputs, and reports.
 2. **One-Click Deployments:** Keeping the setup process as close to "Zero-Install" as possible.
 3. **Intuitive Personas:** Ensuring the agents (Librarian, Sentry, Auditor) communicate and act in ways that are easily understood by non-technical stakeholders.
+4. **Hybrid Interface Architecture:** Both a robust Command Line Interface (CLI) and a local-first Graphical User Interface (GUI, e.g., via a local `index.html`) must be available. Users should never be forced to choose one over the other; all core functionality must be accessible through both paradigms to ensure maximum accessibility for all skill levels.
 
 ---
 
