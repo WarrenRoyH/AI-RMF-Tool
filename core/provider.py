@@ -2,11 +2,30 @@ import os
 import sys
 import json
 import subprocess
+import logging
 from dotenv import load_dotenv
 from litellm import completion
 
 # Load environment variables from .env
 load_dotenv()
+
+# --- Arize Phoenix / OpenInference Instrumentation ---
+# Instrumentation will automatically pick up PHOENIX_PORT if set by Inspector
+try:
+    if os.getenv("PHOENIX_PORT"):
+        from phoenix.otel import register
+        from openinference.instrumentation.litellm import LiteLLMInstrumentor
+        
+        endpoint = f"http://localhost:{os.getenv('PHOENIX_PORT')}/v1/traces"
+        register(
+            project_name=os.getenv("PHOENIX_PROJECT_NAME", "ai-rmf-tools"),
+            endpoint=endpoint
+        )
+        LiteLLMInstrumentor().instrument()
+except ImportError:
+    pass
+except Exception as e:
+    logging.error(f"Failed to initialize observability instrumentation: {e}")
 
 class QuotaExceededError(Exception):
     """Exception raised when API quota is reached (429)."""

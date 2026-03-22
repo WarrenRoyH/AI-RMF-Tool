@@ -23,18 +23,35 @@ def run_health():
     print(f"--> Sandbox (bwrap): {'[OK]' if bwrap.returncode == 0 else '[MISSING]'}")
     
     npx = subprocess.run(["which", "npx"], capture_output=True, text=True)
-    print(f"--> Benchmarks (npx/promptfoo): {'[OK]' if npx.returncode == 0 else '[MISSING]'}")
+    if npx.returncode == 0:
+        pf_v = subprocess.run(["npx", "--yes", "promptfoo", "--version"], capture_output=True, text=True)
+        v_str = pf_v.stdout.strip() if pf_v.returncode == 0 else "N/A"
+        print(f"--> Benchmarks (npx/promptfoo): [OK] (v{v_str})")
+    else:
+        print(f"--> Benchmarks (npx/promptfoo): [MISSING]")
 
     pip_audit = subprocess.run(["which", "pip-audit"], capture_output=True, text=True)
     if pip_audit.returncode != 0:
         # Check in venv
         pip_audit_venv = WORKSPACE_DIR.parent / ".venv" / "bin" / "pip-audit"
         if pip_audit_venv.exists():
-            print(f"--> Supply Chain (pip-audit): [OK] (Venv)")
+            v_cmd = subprocess.run([str(pip_audit_venv), "--version"], capture_output=True, text=True)
+            v_str = v_cmd.stdout.strip() if v_cmd.returncode == 0 else "Venv"
+            print(f"--> Supply Chain (pip-audit): [OK] ({v_str})")
         else:
             print(f"--> Supply Chain (pip-audit): [MISSING]")
     else:
-        print(f"--> Supply Chain (pip-audit): [OK]")
+        v_cmd = subprocess.run(["pip-audit", "--version"], capture_output=True, text=True)
+        v_str = v_cmd.stdout.strip() if v_cmd.returncode == 0 else "OK"
+        print(f"--> Supply Chain (pip-audit): [OK] (v{v_str})")
+
+    # Check for Garak version
+    garak_venv = WORKSPACE_DIR.parent / ".venv" / "bin" / "python3"
+    garak_v = subprocess.run([str(garak_venv), "-m", "garak", "--version"], capture_output=True, text=True)
+    if garak_v.returncode == 0:
+        print(f"--> Red Teaming (garak): [OK] (v{garak_v.stdout.strip()})")
+    else:
+        print(f"--> Red Teaming (garak): [MISSING or FAILED]")
 
     # 3. API Connectivity
     print("--> Testing API Connectivity...")

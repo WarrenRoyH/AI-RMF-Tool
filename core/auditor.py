@@ -357,6 +357,15 @@ class Auditor:
             "top_vulns": top_vulns
         }
 
+        # Include Verification results if available
+        verify_path = self.workspace_dir / "reports" / "verification.json"
+        if verify_path.exists():
+            try:
+                with open(verify_path, 'r') as f:
+                    v_data = json.load(f)
+                    summary_json["verification"] = v_data
+            except: pass
+
         # --- Render HTML for Dashboard ---
         try:
             import markdown
@@ -373,20 +382,31 @@ class Auditor:
             index_path = BASE_DIR / "index.html"
             if index_path.exists():
                 with open(index_path, 'r') as f: content = f.read()
+                
                 # Sync Audit Data
                 if "const LATEST_AUDIT_DATA = " in content:
-                    content = re.sub(r"const LATEST_AUDIT_DATA = .*?;", f"const LATEST_AUDIT_DATA = {json.dumps(summary_json)};", content, flags=re.S)
+                    parts = content.split("const LATEST_AUDIT_DATA = ")
+                    # We expect exactly one semi-colon after the JSON assignment
+                    # Use split(..., 1) to only split at the first occurrence
+                    rest = parts[1].split(";", 1)
+                    if len(rest) > 1:
+                        content = parts[0] + "const LATEST_AUDIT_DATA = " + json.dumps(summary_json) + ";" + rest[1]
                 else:
                     content = content.replace("</script>", f"\n    const LATEST_AUDIT_DATA = {json.dumps(summary_json)};\n</script>")
                 
                 # Sync Project Manifest
                 if "const PROJECT_MANIFEST = " in content:
-                    content = re.sub(r"const PROJECT_MANIFEST = .*?;", f"const PROJECT_MANIFEST = {json.dumps(manifest)};", content, flags=re.S)
+                    parts = content.split("const PROJECT_MANIFEST = ")
+                    rest = parts[1].split(";", 1)
+                    if len(rest) > 1:
+                        content = parts[0] + "const PROJECT_MANIFEST = " + json.dumps(manifest) + ";" + rest[1]
                 else:
                     content = content.replace("</script>", f"\n    const PROJECT_MANIFEST = {json.dumps(manifest)};\n</script>")
                 
                 with open(index_path, 'w') as f: f.write(content)
-        except: pass
+        except Exception as e:
+            # For debugging, we could log it, but per mandates we keep it silent
+            pass
 
         (self.workspace_dir / "reports" / "latest_audit_report.md").write_text(content_str)
         (self.workspace_dir / "reports" / f"audit_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md").write_text(content_str)

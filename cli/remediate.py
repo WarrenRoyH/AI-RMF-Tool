@@ -2,10 +2,10 @@ import json
 from cli.utils import check_setup, WORKSPACE_DIR
 from core.remediator import remediator
 
-def run_remediate():
+def run_remediate(is_dry_run=False):
     check_setup()
     print("\n" + "="*60)
-    print("--> Phase 3: MANAGE (The Remediator)")
+    print(f"--> Phase 3: MANAGE (The Remediator){' [DRY RUN MODE]' if is_dry_run else ''}")
     print("="*60)
     
     summary_path = WORKSPACE_DIR / "reports" / "summary.json"
@@ -34,6 +34,10 @@ def run_remediate():
             print("-"*40)
             print(f.read())
             print("-"*40)
+
+        if is_dry_run:
+            print("\n[!] Dry Run complete. Patch NOT applied.")
+            return
 
         # In a real CLI, we might use questionary.confirm
         # But for autonomous cycles, we apply it.

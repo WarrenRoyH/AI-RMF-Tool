@@ -31,7 +31,18 @@ This file tracks the long-term goals and progress of the AI-RMF-Tools project. T
 - [x] Add `test_inspector.py` for observability verification.
 - [x] Implement automated regression testing in `bootstrap.sh`.
 
+## Phase 7: Advanced Verification & Self-Healing
+- [x] Implement `ai-rmf verify` to test applied remediations against original failure cases.
+- [x] Add a `--dry-run` flag to the `remediate` command for safety.
+- [x] Implement an automated "Fix-Audit-Verify" loop in `autopilot`.
+
+## Phase 8: Production Hardening & Refinement
+- [x] Integrate OpenInference/Arize Phoenix instrumentation into `core/provider.py`.
+- [x] Implement enhanced health checks for all external tool versions (garak, promptfoo).
+- [x] Add a `--verbose` flag to the CLI for detailed NIST mapping logs.
+
 ## Completed Tasks
 - [x] Initial project structure and `bootstrap.sh`.
 - [x] Basic `govern` subcommand flow.
 - [x] AI-RMF-Optimizer Skill integration.
+- [x] Phase 8: Production Hardening & Refinement.
