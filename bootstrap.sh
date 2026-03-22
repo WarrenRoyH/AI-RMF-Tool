@@ -8,6 +8,17 @@ set -e
 # --- 0. Set Defaults ---
 FLAVOR=${FLAVOR:-"full"}
 SANDBOX=${SANDBOX:-"none"}
+RUN_TESTS=false
+
+# --- Parse Arguments ---
+for i in "$@"; do
+  case $i in
+    --test)
+      RUN_TESTS=true
+      shift
+      ;;
+  esac
+done
 
 # --- Colors for Output ---
 RED='\033[0;31m'
@@ -37,12 +48,12 @@ touch workspace/project-manifest.json
 
 # --- 3. Initialize Python Environment ---
 echo "--> ${BLUE}Setting up isolated Python environment (Python 3.11)...${NC}"
-uv venv --python 3.11 .venv
+uv venv --python 3.11 .venv --clear
 . .venv/bin/activate
 
 # --- 4. Install Dependencies (Modular Tiers) ---
 echo "--> ${BLUE}Installing AI-RMF dependencies (Tier: $FLAVOR)...${NC}"
-uv pip install pip python-dotenv questionary litellm pydantic psutil
+uv pip install pip python-dotenv questionary litellm pydantic psutil numpy==2.2.3
 
 if [ "$FLAVOR" = "minimal" ]; then
   echo "--> ${GREEN}Minimal Tier: Governance & Core LLM connectivity only.${NC}"
@@ -58,7 +69,10 @@ fi
 if [ "$FLAVOR" = "full" ]; then
   echo "--> ${BLUE}Full Tier: Adding Observatory (Arize-Phoenix) & Export Tools...${NC}"
   # xhtml2pdf is a pure Python replacement for wkhtmltopdf/pdfkit
-  uv pip install arize-phoenix markdown xhtml2pdf
+  # Note: xhtml2pdf -> svglib -> pycairo requires system cairo headers.
+  # We try to install it but continue if it fails.
+  uv pip install arize-phoenix markdown || true
+  uv pip install xhtml2pdf || echo "${RED}[Warning] xhtml2pdf failed to install (requires system cairo). PDF export will be unavailable.${NC}"
 fi
 
 # Install promptfoo via npm if available
@@ -72,6 +86,8 @@ fi
 # Pre-download NLP models to prevent runtime 'No module named pip' errors
 echo "--> ${BLUE}Pre-loading NLP models for Sentry...${NC}"
 . .venv/bin/activate
+# Force numpy 2.2.3 again as it may have been downgraded by garak/llm-guard
+uv pip install numpy==2.2.3 --quiet
 python3 -m spacy download en_core_web_lg --quiet
 
 # --- 5. Configure Sandbox (Context Only for now) ---
@@ -142,6 +158,15 @@ else
 fi
 
 # --- 7. Final Hand-off ---
+if [ "$RUN_TESTS" = true ]; then
+  echo ""
+  echo "${BLUE}==> [REGRESSION]: Running automated test suite...${NC}"
+  . .venv/bin/activate
+  python3 -m pytest tests/
+  echo "${GREEN}==> All tests passed successfully.${NC}"
+  exit 0
+fi
+
 echo ""
 echo "${GREEN}==============================================${NC}"
 echo "${GREEN}   AI-RMF WORKSPACE INITIALIZATION COMPLETE   ${NC}"
