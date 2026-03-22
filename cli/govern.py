@@ -270,6 +270,24 @@ def librarian_verify(draft_manifest, is_autopilot=False):
                 policy_res = auditor.generate_compliance_policies()
                 print(f"--> {policy_res}")
 
+                # --- NIST Artifact Export (Phase 11) ---
+                artifact = {
+                    "phase": "GOVERN",
+                    "timestamp": datetime.now().isoformat(),
+                    "nist_mappings": {
+                        "GV-1.1": "AI system mission and context defined.",
+                        "GV-2.1": "Governance policies (AUP, SSP) drafted.",
+                        "GV-4.1": f"Accountability assigned to {manifest_data.get('accountability', {}).get('security_contact')}.",
+                        "MP-1.1": f"System context and domain ({manifest_data.get('risk_profile', {}).get('domain')}) identified."
+                    },
+                    "manifest_snapshot": manifest_data
+                }
+                artifact_path = WORKSPACE_DIR / "reports" / "governance_artifact.json"
+                artifact_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(artifact_path, 'w') as f:
+                    json.dump(artifact, f, indent=4)
+                print(f"--> [ARTIFACT]: NIST Governance Artifact exported to {artifact_path}")
+
                 # --- Automated Dataset Generation ---
                 if questionary.confirm("\nLibrarian: Would you like me to generate a domain-specific evaluation dataset for benchmarking?").ask():
                     print(f"\n[!] [GENERATING]: Creating {manifest_data.get('risk_profile', {}).get('domain')} test cases...")

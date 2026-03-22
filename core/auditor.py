@@ -475,4 +475,35 @@ class Auditor:
             with open(export_path, "wb") as f: pisa.CreatePDF(full_html, dest=f)
             return f"Report exported to PDF: {export_path}"
 
+    def bundle_evidence_package(self):
+        """Bundles all NIST-mapped artifacts into a ZIP for Phase 11: Report Aggregator."""
+        import zipfile
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        zip_path = self.workspace_dir / "reports" / f"nist_rmf_evidence_package_{timestamp}.zip"
+        
+        # Files to include
+        artifacts = [
+            self.manifest_path,
+            self.workspace_dir / "reports" / "summary.json",
+            self.workspace_dir / "reports" / "latest_audit_report.md",
+            self.workspace_dir / "reports" / "nutrition_label.md",
+            self.workspace_dir / "reports" / "governance_artifact.json",
+            self.workspace_dir / "reports" / "threat_artifact.json",
+            self.workspace_dir / "logs" / "sentry_violations.jsonl"
+        ]
+        
+        # Also include generated policies
+        policy_dir = self.workspace_dir / "policies"
+        if policy_dir.exists():
+            artifacts.extend(list(policy_dir.glob("*")))
+
+        count = 0
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            for art in artifacts:
+                if art.exists():
+                    zipf.write(art, arcname=art.name)
+                    count += 1
+        
+        return f"NIST RMF Evidence Package bundled ({count} items): {zip_path}"
+
 auditor = Auditor()

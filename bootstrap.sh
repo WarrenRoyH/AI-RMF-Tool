@@ -48,31 +48,30 @@ touch workspace/project-manifest.json
 
 # --- 3. Initialize Python Environment ---
 echo "--> ${BLUE}Setting up isolated Python environment (Python 3.11)...${NC}"
-uv venv --python 3.11 .venv --clear
-. .venv/bin/activate
+# uv sync will automatically manage the venv
 
 # --- 4. Install Dependencies (Modular Tiers) ---
 echo "--> ${BLUE}Installing AI-RMF dependencies (Tier: $FLAVOR)...${NC}"
-uv pip install pip python-dotenv questionary litellm pydantic psutil numpy==2.2.3
+case $FLAVOR in
+  minimal)
+    /home/warren/.local/bin/uv sync
+    ;;
+  standard)
+    /home/warren/.local/bin/uv sync --extra standard
+    ;;
+  full)
+    /home/warren/.local/bin/uv sync --extra standard --extra full || {
+      echo "${RED}[Warning] Full tier installation failed (likely xhtml2pdf/cairo). Falling back to standard tier.${NC}"
+      /home/warren/.local/bin/uv sync --extra standard
+    }
+    ;;
+  *)
+    /home/warren/.local/bin/uv sync
+    ;;
+esac
 
 if [ "$FLAVOR" = "minimal" ]; then
   echo "--> ${GREEN}Minimal Tier: Governance & Core LLM connectivity only.${NC}"
-fi
-
-if [ "$FLAVOR" = "standard" ] || [ "$FLAVOR" = "full" ]; then
-  echo "--> ${BLUE}Standard Tier: Adding Security Scanning & Guardrails...${NC}"
-  # Use transformers 4.57.6 to fix CVEs while maintaining compatibility
-  # with llm-guard which requires the 4.x TFPreTrainedModel.
-  uv pip install garak llm-guard transformers==4.57.6 tf-keras pip-audit spacy
-fi
-
-if [ "$FLAVOR" = "full" ]; then
-  echo "--> ${BLUE}Full Tier: Adding Observatory (Arize-Phoenix) & Export Tools...${NC}"
-  # xhtml2pdf is a pure Python replacement for wkhtmltopdf/pdfkit
-  # Note: xhtml2pdf -> svglib -> pycairo requires system cairo headers.
-  # We try to install it but continue if it fails.
-  uv pip install arize-phoenix markdown || true
-  uv pip install xhtml2pdf || echo "${RED}[Warning] xhtml2pdf failed to install (requires system cairo). PDF export will be unavailable.${NC}"
 fi
 
 # Install promptfoo via npm if available
@@ -85,10 +84,7 @@ fi
 
 # Pre-download NLP models to prevent runtime 'No module named pip' errors
 echo "--> ${BLUE}Pre-loading NLP models for Sentry...${NC}"
-. .venv/bin/activate
-# Force numpy 2.2.3 again as it may have been downgraded by garak/llm-guard
-uv pip install numpy==2.2.3 --quiet
-python3 -m spacy download en_core_web_lg --quiet
+/home/warren/.local/bin/uv run python3 -m spacy download en_core_web_lg --quiet
 
 # --- 5. Configure Sandbox (Context Only for now) ---
 if [ "$SANDBOX" = "strict" ]; then
@@ -161,8 +157,7 @@ fi
 if [ "$RUN_TESTS" = true ]; then
   echo ""
   echo "${BLUE}==> [REGRESSION]: Running automated test suite...${NC}"
-  . .venv/bin/activate
-  python3 -m pytest tests/
+  /home/warren/.local/bin/uv run pytest tests/
   echo "${GREEN}==> All tests passed successfully.${NC}"
   exit 0
 fi

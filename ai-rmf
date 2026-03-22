@@ -7,15 +7,13 @@ set -e
 
 # Get the directory where the script is located
 BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
-VENV_PATH="$BASE_DIR/.venv"
 
-if [ ! -d "$VENV_PATH" ]; then
-    echo "Error: Virtual environment not found at $VENV_PATH. Run './bootstrap.sh' first."
+# Ensure we use the full path to uv
+UV_PATH="/home/warren/.local/bin/uv"
+
+if [ ! -f "$UV_PATH" ]; then
+    echo "Error: uv not found. Run './bootstrap.sh' first."
     exit 1
 fi
 
-# Activate the venv and run the core script
-export VIRTUAL_ENV="$VENV_PATH"
-export PATH="$VENV_PATH/bin:$PATH"
-
-exec python3 "$BASE_DIR/ai_rmf_core.py" "$@"
+exec "$UV_PATH" run python3 "$BASE_DIR/ai_rmf_core.py" "$@"

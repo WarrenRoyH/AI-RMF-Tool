@@ -105,12 +105,76 @@ class Sentry:
         except Exception as e:
             logging.error(f"Error initializing manifest-based output scanners: {e}")
 
+    def send_notification(self, log_entry):
+        """Sends an alert via Resend for Phase 10: Refined Feedback Loop."""
+        api_key = os.getenv("RESEND_API_KEY")
+        if not api_key:
+            return
+
+        try:
+            import resend
+            resend.api_key = api_key
+            
+            # Load contact from manifest
+            contact = "security@example.com"
+            project_name = "AI-RMF Tool"
+            if self.manifest_path.exists():
+                with open(self.manifest_path, 'r') as f:
+                    data = json.load(f)
+                    contact = data.get("accountability", {}).get("security_contact", contact)
+                    project_name = data.get("project_name", project_name)
+
+            params = {
+                "from": "AI-RMF Sentry <onboarding@resend.dev>",
+                "to": [contact],
+                "subject": f"[ALERT] Policy Violation Detected: {project_name}",
+                "html": f"""
+                <h2>NIST AI RMF Policy Violation</h2>
+                <p><strong>Project:</strong> {project_name}</p>
+                <p><strong>Type:</strong> {log_entry['type']}</p>
+                <p><strong>Risk Score:</strong> {log_entry['risk_score']}</p>
+                <p><strong>Timestamp:</strong> {log_entry['timestamp']}</p>
+                <hr>
+                <p><strong>Original Input:</strong><br><pre>{log_entry['original']}</pre></p>
+                <p><strong>Action Required:</strong> Please review this violation in the AI-RMF Dashboard.</p>
+                """
+            }
+            resend.Emails.send(params)
+        except Exception as e:
+            logging.error(f"Failed to send Resend notification: {e}")
+
+    def log_violation(self, violation_type, original, risk_score, sanitized=None):
+        """Logs a policy violation for Phase 10: Advisory Kill-Switch."""
+        LOG_PATH = Path("workspace/logs/sentry_violations.jsonl")
+        LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        
+        log_entry = {
+            "timestamp": __import__("datetime").datetime.now().isoformat(),
+            "type": violation_type,
+            "original": original,
+            "sanitized": sanitized,
+            "risk_score": risk_score,
+            "status": "pending" if not self.shadow_mode else "shadow_blocked"
+        }
+        
+        with open(LOG_PATH, "a") as f:
+            f.write(json.dumps(log_entry) + "\n")
+        
+        # Trigger notification for high-risk violations
+        self.send_notification(log_entry)
+        
+        return log_entry
+
     def validate_input(self, prompt):
         """Scans and potentially redacts user input."""
         if not self.input_scanners:
             return prompt, True, 0.0
         try:
             sanitized_prompt, is_valid, risk_score = scan_prompt(self.input_scanners, prompt)
+            
+            # llm-guard can return a bool or a dict of {scanner: bool}
+            if is_valid is False or (isinstance(is_valid, dict) and any(v is False for v in is_valid.values())):
+                self.log_violation("input_violation", prompt, risk_score, sanitized_prompt)
             return sanitized_prompt, is_valid, risk_score
         except Exception as e:
             logging.error(f"Sentry input validation error: {e}")
@@ -122,6 +186,8 @@ class Sentry:
             return response, True, 0.0
         try:
             sanitized_response, is_valid, risk_score = scan_output(self.output_scanners, prompt, response)
+            if is_valid is False or (isinstance(is_valid, dict) and any(v is False for v in is_valid.values())):
+                self.log_violation("output_violation", response, risk_score, sanitized_response)
             return sanitized_response, is_valid, risk_score
         except Exception as e:
             logging.error(f"Sentry output validation error: {e}")

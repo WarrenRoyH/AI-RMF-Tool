@@ -56,6 +56,23 @@ def run_map(is_autopilot=False, is_dry_run=False):
         print(response)
         print("-"*40)
 
+        # --- NIST Artifact Export (Phase 11) ---
+        artifact = {
+            "phase": "MAP",
+            "timestamp": __import__("datetime").datetime.now().isoformat(),
+            "nist_mappings": {
+                "MP-1.1": "AI system context and domain analyzed.",
+                "MP-2.1": "Potential risks and impacts identified.",
+                "MP-3.1": "System attack surface and threats mapped."
+            },
+            "analysis_summary": response
+        }
+        artifact_path = Path("workspace/reports/threat_artifact.json")
+        artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(artifact_path, 'w') as f:
+            json.dump(artifact, f, indent=4)
+        print(f"--> [ARTIFACT]: NIST Threat Artifact exported to {artifact_path}")
+
     if is_autopilot:
         # Automated Sequential Run
         print("\n[!] Autopilot: Triggering Garak Probes...")

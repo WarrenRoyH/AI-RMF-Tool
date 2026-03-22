@@ -1,0 +1,35 @@
+[project]
+name = "ai-rmf-tools"
+version = "0.1.0"
+description = "NIST AI RMF 1.0 Implementation Toolkit"
+readme = "README.md"
+authors = [{ name = "WarrenRoyH" }]
+requires-python = ">=3.11"
+dependencies = [
+    "python-dotenv",
+    "questionary",
+    "litellm",
+    "pydantic",
+    "psutil",
+    "numpy==2.2.3",
+    "pytest",
+]
+
+[project.optional-dependencies]
+standard = [
+    "garak",
+    "llm-guard",
+    "transformers==4.57.6",
+    "tf-keras",
+    "pip-audit",
+    "spacy",
+]
+full = [
+    "arize-phoenix",
+    "markdown",
+    "xhtml2pdf",
+]
+
+[tool.uv]
+managed = true
+package = false

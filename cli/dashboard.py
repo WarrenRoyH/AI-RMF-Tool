@@ -40,6 +40,59 @@ async def sync_manifest(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/violations")
+async def get_violations():
+    LOG_PATH = WORKSPACE_DIR / "logs" / "sentry_violations.jsonl"
+    violations = []
+    if LOG_PATH.exists():
+        with open(LOG_PATH, 'r') as f:
+            for line in f:
+                try:
+                    entry = json.loads(line)
+                    if entry.get("status") == "pending":
+                        violations.append(entry)
+                except: continue
+    return violations
+
+@app.post("/sentry_action")
+async def sentry_action(request: Request):
+    try:
+        data = await request.json()
+        index = data.get("index")
+        action = data.get("action")
+        
+        LOG_PATH = WORKSPACE_DIR / "logs" / "sentry_violations.jsonl"
+        if not LOG_PATH.exists(): return {"status": "error", "message": "Log not found"}
+        
+        lines = []
+        with open(LOG_PATH, 'r') as f:
+            lines = f.readlines()
+        
+        # Find the Nth pending violation
+        pending_count = 0
+        target_line_idx = -1
+        for i, line in enumerate(lines):
+            entry = json.loads(line)
+            if entry.get("status") == "pending":
+                if pending_count == index:
+                    target_line_idx = i
+                    break
+                pending_count += 1
+        
+        if target_line_idx != -1:
+            entry = json.loads(lines[target_line_idx])
+            entry["status"] = "killed" if action == "kill" else "allowed"
+            entry["resolved_at"] = __import__("datetime").datetime.now().isoformat()
+            lines[target_line_idx] = json.dumps(entry) + "\n"
+            
+            with open(LOG_PATH, 'w') as f:
+                f.writelines(lines)
+            
+            return {"status": "success"}
+        return {"status": "error", "message": "Violation not found"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 def run_sync():
     """Manually synchronizes the workspace state with the GUI (index.html)."""
     check_setup()

@@ -50,7 +50,7 @@ def main():
     subparsers.add_parser("sync")
     
     report_parser = subparsers.add_parser("report")
-    report_parser.add_argument("--format", choices=["html", "pdf"], default="html", help="Report format (default: html)")
+    report_parser.add_argument("--format", choices=["html", "pdf", "bundle"], default="html", help="Report format (default: html)")
 
     autopilot_parser = subparsers.add_parser("autopilot")
     autopilot_parser.add_argument("--dry-run", action="store_true", help="Run without making external changes or API calls")
