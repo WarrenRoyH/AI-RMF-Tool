@@ -24,7 +24,7 @@ from cli.measure import run_measure
 from cli.remediate import run_remediate
 from cli.red_team import run_red_team
 from cli.report import run_report
-from cli.dashboard import run_dashboard
+from cli.dashboard import run_dashboard, run_sync
 from cli.autopilot import run_autopilot
 from cli.health import run_health
 from cli.verify import run_verify
@@ -47,6 +47,7 @@ def main():
     subparsers.add_parser("red_teamer")
     subparsers.add_parser("dashboard")
     subparsers.add_parser("verify")
+    subparsers.add_parser("sync")
     
     report_parser = subparsers.add_parser("report")
     report_parser.add_argument("--format", choices=["html", "pdf"], default="html", help="Report format (default: html)")
@@ -75,6 +76,7 @@ def main():
         elif args.command == "autopilot": run_autopilot(is_dry_run=args.dry_run, interval=args.interval)
         elif args.command == "health": run_health()
         elif args.command == "verify": run_verify()
+        elif args.command == "sync": run_sync()
         else: parser.print_help()
     except QuotaExceededError as e:
         print(f"\n[QUOTA EXCEEDED]: {e}")
