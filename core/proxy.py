@@ -7,6 +7,30 @@ from core.sentry import sentry
 from core.provider import provider
 from datetime import datetime
 
+# --- OPENINFERENCE INSTRUMENTATION ---
+try:
+    from openinference.instrumentation.openai import OpenAIInstrumentor
+    from opentelemetry import trace
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+
+    # Default endpoint for Phoenix collector
+    endpoint = "http://localhost:6006/v1/traces"
+    tracer_provider = TracerProvider()
+    trace.set_tracer_provider(tracer_provider)
+    
+    span_exporter = OTLPSpanExporter(endpoint=endpoint)
+    span_processor = SimpleSpanProcessor(span_exporter)
+    tracer_provider.add_span_processor(span_processor)
+    
+    # Instrument OpenAI-compatible calls
+    OpenAIInstrumentor().instrument()
+    print("--> [PROXY]: OpenInference Tracing enabled (Exporting to http://localhost:6006)")
+except ImportError:
+    print("--> [PROXY]: OpenInference or OpenTelemetry not found. Tracing disabled.")
+# -------------------------------------
+
 app = FastAPI(title="AI-RMF Sentry Proxy")
 LOG_PATH = Path("workspace/logs/sentry_violations.jsonl")
 

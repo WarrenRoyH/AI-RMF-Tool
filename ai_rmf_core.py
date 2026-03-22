@@ -48,6 +48,7 @@ def main():
 
     autopilot_parser = subparsers.add_parser("autopilot")
     autopilot_parser.add_argument("--dry-run", action="store_true", help="Run without making external changes or API calls")
+    autopilot_parser.add_argument("--interval", type=int, default=0, help="Interval in seconds for periodic scheduled scans (0 = run once)")
     
     subparsers.add_parser("health")
 
@@ -62,7 +63,7 @@ def main():
         elif args.command == "red_teamer": run_red_team()
         elif args.command == "report": run_report(report_format=args.format)
         elif args.command == "dashboard": run_dashboard()
-        elif args.command == "autopilot": run_autopilot(is_dry_run=args.dry_run)
+        elif args.command == "autopilot": run_autopilot(is_dry_run=args.dry_run, interval=args.interval)
         elif args.command == "health": run_health()
         else: parser.print_help()
     except QuotaExceededError as e:
