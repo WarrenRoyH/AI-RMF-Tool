@@ -24,8 +24,8 @@ jobs:
       run: |
         uv venv
         . .venv/bin/activate
-        uv pip install .
-        uv pip install pytest pytest-cov resend xhtml2pdf markdown
+        uv pip install .[standard,full]
+        uv pip install pytest pytest-cov resend
         
     - name: Run tests with coverage
       run: |
