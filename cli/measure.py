@@ -47,6 +47,8 @@ def run_measure(is_autopilot=False, assessment_type=None, is_dry_run=False):
         print(f"\n[!] CLI Trigger: Running '{assessment_type}' assessment...")
         if assessment_type == "audit":
             auditor.run_compliance_audit()
+        elif assessment_type == "swarm":
+            auditor.run_swarm_audit()
         elif assessment_type == "promptfoo":
             cmd = auditor.generate_promptfoo_config()
             if cmd: os.system(cmd)
@@ -61,6 +63,7 @@ def run_measure(is_autopilot=False, assessment_type=None, is_dry_run=False):
             "\nMEASURE TOOLBOX: Select an assessment type:",
             choices=[
                 Choice("Generate NIST Compliance Audit Report", "audit"),
+                Choice("Multi-Agent Consensus (Swarm Audit)", "swarm"),
                 Choice("Run Automated Accuracy Benchmarking (Promptfoo)", "promptfoo"),
                 Choice("Run Automated Vulnerability Scanning (Garak)", "garak"),
                 Choice("Exit Measure phase", "exit")
@@ -68,6 +71,7 @@ def run_measure(is_autopilot=False, assessment_type=None, is_dry_run=False):
         ).ask()
         if action == "exit" or action is None: break
         if action == "audit": auditor.run_compliance_audit()
+        elif action == "swarm": auditor.run_swarm_audit()
         elif action == "promptfoo":
             cmd = auditor.generate_promptfoo_config()
             if cmd: os.system(cmd)

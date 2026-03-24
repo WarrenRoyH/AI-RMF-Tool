@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 from datetime import datetime
 from core.discovery import discovery
+from core.swarm import swarm
 
 # Define project root
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -420,7 +421,85 @@ class Auditor:
 
         (self.workspace_dir / "reports" / "latest_audit_report.md").write_text(content_str)
         (self.workspace_dir / "reports" / f"audit_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md").write_text(content_str)
+        self.generate_nist_json(manifest, cat_data, total_score)
         return "NIST Compliance Report Updated with advanced metrics."
+
+
+    def generate_nist_json(self, manifest, cat_data, total_score):
+        """Generates a formal NIST AI RMF 1.0 JSON artifact."""
+        nist_report = {
+            "nist_ai_rmf_version": "1.0",
+            "project": manifest.get('project_name'),
+            "timestamp": datetime.now().isoformat(),
+            "overall_compliance_score": f"{total_score:.1f}%",
+            "functions": []
+        }
+        
+        func_map = {
+            "GOVERN": ["GV-1", "GV-2", "GV-3", "GV-4", "GV-5", "GV-6"],
+            "MAP": ["MP-1", "MP-2", "MP-3", "MP-4", "MP-5"],
+            "MEASURE": ["ME-1", "ME-2", "ME-3", "ME-4"],
+            "MANAGE": ["MA-1", "MA-2", "MA-3", "MA-4"]
+        }
+        
+        for func_name, cat_list in func_map.items():
+            func_obj = {
+                "name": func_name,
+                "categories": []
+            }
+            met_in_func = 0
+            for cat_id in cat_list:
+                status, summary = cat_data.get(cat_id, ("ℹ️ N/A", "Not assessed"))
+                func_obj["categories"].append({
+                    "id": cat_id,
+                    "status": "MET" if "MET" in status else "FAIL" if "FAIL" in status else "PARTIAL",
+                    "summary": summary
+                })
+                if "MET" in status: met_in_func += 1
+            
+            func_obj["score"] = f"{(met_in_func / len(cat_list)) * 100:.1f}%"
+            nist_report["functions"].append(func_obj)
+            
+        nist_json_path = self.workspace_dir / "reports" / "nist_rmf_audit.json"
+        with open(nist_json_path, "w") as f:
+            json.dump(nist_report, f, indent=4)
+        
+        return nist_json_path
+
+
+    def run_swarm_audit(self):
+        """Phase 17: Multi-Agent Swarm Audit."""
+        if not self.manifest_path.exists(): return "Error: Manifest missing."
+        with open(self.manifest_path, 'r') as f: manifest = json.load(f)
+        
+        # 1. Gather Context
+        sast_findings = self.run_sast_scan()
+        infra_findings = self.run_infra_audit()
+        supply_chain_msg, top_vulns = self.run_supply_chain_scan()
+        
+        scan_results = {
+            "sast": sast_findings,
+            "infra": infra_findings,
+            "supply_chain": supply_chain_msg,
+            "top_vulnerabilities": top_vulns
+        }
+        
+        violations = []
+        if self.log_path.exists():
+            with open(self.log_path, 'r') as f:
+                for line in f:
+                    try: violations.append(json.loads(line))
+                    except: continue
+        
+        # 2. Run Swarm Consensus
+        print("[!] [SWARM]: Initiating Multi-Agent Consensus...")
+        consensus, individuals = swarm.run_consensus(manifest, scan_results, violations)
+        
+        # 3. Save to workspace
+        swarm_report_path = self.workspace_dir / "reports" / "swarm_consensus_report.md"
+        swarm_report_path.write_text(consensus)
+        
+        return f"Swarm Consensus Report generated: {swarm_report_path}"
 
 
     def generate_nutrition_label(self):

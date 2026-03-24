@@ -66,13 +66,17 @@ def main():
     subparsers.add_parser("proxy")
     
     measure_parser = subparsers.add_parser("measure")
-    measure_parser.add_argument("--type", choices=["audit", "promptfoo", "garak"], help="Assessment type to run")
+    measure_parser.add_argument("--type", choices=["audit", "swarm", "promptfoo", "garak"], help="Assessment type to run")
     measure_parser.add_argument("--autopilot", action="store_true", help="Run in autopilot mode")
     
     remediate_parser = subparsers.add_parser("remediate")
     remediate_parser.add_argument("--dry-run", action="store_true", help="Suggest patch without applying it")
     
-    subparsers.add_parser("red_teamer")
+    red_teamer_parser = subparsers.add_parser("red_teamer")
+    red_teamer_parser.add_argument("--type", choices=["static", "dynamic"], help="Assessment type")
+    red_teamer_parser.add_argument("--probes", type=int, default=5, help="Number of dynamic probes")
+    red_teamer_parser.add_argument("--target", help="Target endpoint URL")
+
     subparsers.add_parser("dashboard")
     subparsers.add_parser("verify")
     verify_artifacts_parser = subparsers.add_parser("verify-artifacts")
@@ -105,7 +109,8 @@ def main():
         elif args.command == "measure": 
             run_measure(is_autopilot=args.autopilot, assessment_type=args.type)
         elif args.command == "remediate": run_remediate(is_dry_run=args.dry_run)
-        elif args.command == "red_teamer": run_red_team()
+        elif args.command == "red_teamer": 
+            run_red_team(target_url=args.target, assessment_type=args.type, num_probes=args.probes)
         elif args.command == "report": run_report(report_format=args.format)
         elif args.command == "dashboard": run_dashboard()
         elif args.command == "autopilot": run_autopilot(is_dry_run=args.dry_run, interval=args.interval)

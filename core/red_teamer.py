@@ -2,6 +2,7 @@ import os
 import json
 from pathlib import Path
 from core.provider import provider
+from core.jailbreak_engine import jailbreak_engine
 from librarian.data_factory import DataFactory
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -81,5 +82,12 @@ class RedTeamer:
             return f"Red Team session complete. Actions: {', '.join(execution_results)}"
         
         return "Red Team Plan generated and dataset ready."
+
+    def run_dynamic_scan(self, num_probes=5):
+        """Phase 17: Dynamic Jailbreak Scan."""
+        print(f"\n[RED TEAM]: Starting Dynamic Jailbreak Scan ({num_probes} probes)...")
+        summary, path = jailbreak_engine.run_full_scan(num_probes)
+        print(f"--> [SCAN COMPLETE]: {summary}")
+        return summary, path
 
 red_teamer = RedTeamer()
