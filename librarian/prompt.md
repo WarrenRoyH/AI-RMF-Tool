@@ -12,7 +12,7 @@ Extract technical, policy, and organizational details for an expanded `project-m
 - **Efficiency:** Acknowledge all provided data. If a user answers multiple parts of the framework in one go, validate them and move to the next logical step.
 
 ## Interview Phases (NIST-Grounded)
-1. **AI-BOM (Inventory):** Model ID, Version, and Provider.
+1. **AI-BOM (Component Registry):** Model ID, Type (Model, API, Plugin), Version, and Provider for all AI components in the application.
 2. **Context of Use:** Intended users, specific use-case, and Risk Tier (Low, Medium, High).
 3. **Accountability & Training (NEW):**
     - **Escalation Path:** Who is the primary security contact? [NIST GV-4]
@@ -32,7 +32,9 @@ Once gathered, output: "I have gathered all necessary governance data. Generatin
 ```json
 {
   "project_name": "string",
-  "ai_bom": { "model_id": "string", "version": "string", "provider": "string" },
+  "ai_bom": [
+    { "component_id": "string", "type": "model|api|plugin", "version": "string", "provider": "string" }
+  ],
   "risk_profile": { "tier": "low|medium|high", "domain": "string" },
   "accountability": {
     "security_contact": "string",

@@ -22,6 +22,15 @@ def run_govern(is_autopilot=False, is_dry_run=False):
             print(f"--> [SUCCESS]: Loaded {MANIFEST_PATH}. Proceeding to Librarian verification...")
             with open(MANIFEST_PATH, 'r') as f:
                 draft_manifest = json.load(f)
+            # Migration: Convert old ai_bom dict to list if needed
+            if isinstance(draft_manifest.get("ai_bom"), dict):
+                old_bom = draft_manifest["ai_bom"]
+                draft_manifest["ai_bom"] = [{
+                    "component_id": old_bom.get("model_id", "Primary Model"),
+                    "type": "model",
+                    "version": old_bom.get("version", "1.0"),
+                    "provider": old_bom.get("provider", "Unknown")
+                }]
             # Jump to verification phase (Librarian LLM)
             librarian_verify(draft_manifest, is_autopilot)
             return
@@ -57,24 +66,38 @@ def run_govern(is_autopilot=False, is_dry_run=False):
     print("STEP 1: PROJECT IDENTITY")
     project_name = questionary.text("Project Name (for reporting):", default="ai-rmf-tools").ask()
 
-    # --- Step 2: AI-BOM ---
+    # --- Step 2: AI-BOM (Component Registry) ---
     print("\n" + "-"*30)
-    print("STEP 2: AI BILL OF MATERIALS (AI-BOM)")
-    print("EXPLANATION: Tracking the model identity and provenance is critical")
-    print("for transparency and accountability (GOVERN-4).")
-    target_type = questionary.select(
-        "AI System Access Method (Target Type):",
-        choices=[
-            Choice("Cloud API (OpenAI, Claude, Gemini)", "api"),
-            Choice("Local Model (Ollama/Llama.cpp)", "local"),
-            Choice("Local Binary/Program (stdin/stdout)", "program"),
-            Choice("Web Application (URL Scan)", "web")
-        ]
-    ).ask()
+    print("STEP 2: AI BILL OF MATERIALS (AI-BOM) / COMPONENT REGISTRY")
+    print("EXPLANATION: Tracking all AI components (models, APIs, plugins) is critical")
+    print("for transparency and supply chain security (NIST GOVERN-4).")
     
-    model_id = questionary.text("Model Identifier (e.g., gemini-3.1-pro, llama-3):", default="Gemini").ask()
-    model_version = questionary.text("Model Version (e.g., 1.0, preview):", default="3.1 Flash Lite").ask()
-    model_provider = questionary.text("Model Provenance (Provider):", default="Google (Gemini)").ask()
+    ai_bom = []
+    while True:
+        comp_id = questionary.text("Component ID/Name (e.g., Primary Model, Search API):").ask()
+        if not comp_id: break
+        
+        comp_type = questionary.select(
+            "Component Type:",
+            choices=[
+                Choice("Model (Local or Cloud)", "model"),
+                Choice("API Service (External)", "api"),
+                Choice("Plugin/Tool (Agentic Function)", "plugin")
+            ]
+        ).ask()
+        
+        version = questionary.text("Version (e.g., v1.0, 2026-preview):", default="1.0").ask()
+        provider_name = questionary.text("Provider (e.g., OpenAI, Internal, Anthropic):").ask()
+        
+        ai_bom.append({
+            "component_id": comp_id,
+            "type": comp_type,
+            "version": version,
+            "provider": provider_name
+        })
+        
+        if not questionary.confirm("Add another AI component?").ask():
+            break
 
     # --- Step 3: Risk Profile ---
     print("\n" + "-"*30)
@@ -171,7 +194,7 @@ def run_govern(is_autopilot=False, is_dry_run=False):
 
     draft_manifest = {
         "project_name": project_name,
-        "ai_bom": { "model_id": model_id, "version": model_version, "provider": model_provider },
+        "ai_bom": ai_bom,
         "risk_profile": { "tier": risk_tier, "domain": domain },
         "accountability": {
             "security_contact": security_contact,
@@ -202,7 +225,9 @@ def run_govern(is_autopilot=False, is_dry_run=False):
     print("--> GOVERNANCE DATA SUMMARY")
     print("="*60)
     print(f"Project: {project_name}")
-    print(f"Model: {model_id} (v{model_version}) by {model_provider}")
+    print(f"AI Components Registered: {len(ai_bom)}")
+    for comp in ai_bom:
+        print(f"  * {comp['component_id']} ({comp['type']} v{comp['version']}) by {comp['provider']}")
     print(f"Risk Tier: {risk_tier.upper()}")
     print(f"Safety: {', '.join(prohibited)}")
     print(f"PII Protected: {'YES' if pii_protection else 'NO'}")
@@ -214,6 +239,18 @@ def run_govern(is_autopilot=False, is_dry_run=False):
 
 def librarian_verify(draft_manifest, is_autopilot=False):
     print("\n--> Handing off to the Librarian (LLM) for verification...")
+
+    print("\n" + "="*60)
+    print("--> GOVERNANCE DATA SUMMARY (LOADED)")
+    print("="*60)
+    print(f"Project: {draft_manifest.get('project_name', 'Unnamed')}")
+    ai_bom = draft_manifest.get("ai_bom", [])
+    if isinstance(ai_bom, list):
+        print(f"AI Components Registered: {len(ai_bom)}")
+        for comp in ai_bom:
+            print(f"  * {comp.get('component_id', 'Unknown')} ({comp.get('type', 'model')} v{comp.get('version', '1.0')})")
+    print(f"Risk Tier: {draft_manifest.get('risk_profile', {}).get('tier', 'unknown').upper()}")
+    print("="*60)
 
     with open(LIBRARIAN_PROMPT_PATH, 'r') as f:
         system_prompt = f.read()
