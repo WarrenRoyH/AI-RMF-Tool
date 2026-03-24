@@ -1,6 +1,6 @@
 # AI-RMF Lifecycle Tools
 
-![CI Status](https://github.com/WarrenRoyH/AI-RMF-Tool/actions/workflows/ci.yml/badge.svg)
+![CI Status](https://github.com/WarrenRoyH/AI-RMF-Tool/actions/workflows/AI-RMF%20CI/badge.svg)
 ![Coverage](https://codecov.io/gh/WarrenRoyH/AI-RMF-Tool/branch/main/graph/badge.svg)
 
 An automated, persona-driven toolkit designed to operationalize the **NIST AI Risk Management Framework (AI RMF) 1.0**. 
