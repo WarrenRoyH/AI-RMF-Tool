@@ -9,6 +9,16 @@ from core.discovery import discovery
 # Define project root
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+import hashlib
+
+def calculate_sha256(file_path):
+    """Calculates the SHA-256 hash of a file for NIST integrity verification."""
+    sha256_hash = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
+
 class Auditor:
     """
     Phase 4: MEASURE (The Auditor)
@@ -497,6 +507,17 @@ class Auditor:
         if policy_dir.exists():
             artifacts.extend(list(policy_dir.glob("*")))
 
+        # --- Phase 14: Integrity Registry ---
+        checksums = {}
+        for art in artifacts:
+            if art.exists():
+                checksums[art.name] = calculate_sha256(art)
+        
+        checksum_path = self.workspace_dir / "reports" / "manifest_checksums.json"
+        with open(checksum_path, "w") as f:
+            json.dump(checksums, f, indent=4)
+        artifacts.append(checksum_path)
+
         count = 0
         with zipfile.ZipFile(zip_path, 'w') as zipf:
             for art in artifacts:
@@ -504,6 +525,50 @@ class Auditor:
                     zipf.write(art, arcname=art.name)
                     count += 1
         
-        return f"NIST RMF Evidence Package bundled ({count} items): {zip_path}"
+        return f"NIST RMF Evidence Package (Integrity Verified) bundled ({count} items): {zip_path}"
+
+    def verify_evidence_package(self, zip_path):
+        """Verifies the integrity of a NIST Evidence Package using its manifest_checksums.json."""
+        import zipfile
+        import tempfile
+        import shutil
+        
+        zip_path = Path(zip_path)
+        if not zip_path.exists():
+            return f"Error: Evidence Package not found at {zip_path}"
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            try:
+                with zipfile.ZipFile(zip_path, 'r') as zipf:
+                    zipf.extractall(tmpdir)
+                
+                tmp_dir_path = Path(tmpdir)
+                checksum_file = tmp_dir_path / "manifest_checksums.json"
+                if not checksum_file.exists():
+                    return "Error: Integrity Registry (manifest_checksums.json) missing from package."
+                
+                with open(checksum_file, 'r') as f:
+                    registry = json.load(f)
+                
+                results = []
+                failures = 0
+                for filename, expected_hash in registry.items():
+                    file_path = tmp_dir_path / filename
+                    if not file_path.exists():
+                        results.append(f"❌ {filename}: Missing")
+                        failures += 1
+                        continue
+                    
+                    actual_hash = calculate_sha256(file_path)
+                    if actual_hash == expected_hash:
+                        results.append(f"✅ {filename}: Verified")
+                    else:
+                        results.append(f"❌ {filename}: Tampered (Hash mismatch)")
+                        failures += 1
+                
+                status = "COMPROMISED" if failures > 0 else "SECURE"
+                return f"\n--- EVIDENCE INTEGRITY REPORT: {status} ---\n" + "\n".join(results)
+            except Exception as e:
+                return f"Error during verification: {e}"
 
 auditor = Auditor()

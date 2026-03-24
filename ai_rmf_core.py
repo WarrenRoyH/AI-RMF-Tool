@@ -29,6 +29,7 @@ from cli.autopilot import run_autopilot
 from cli.health import run_health
 from cli.verify import run_verify
 from core.proxy import start_proxy
+from core.auditor import auditor
 
 def main():
     parser = argparse.ArgumentParser(description="AI-RMF Lifecycle Tools (NIST 1.0)")
@@ -49,6 +50,8 @@ def main():
     subparsers.add_parser("red_teamer")
     subparsers.add_parser("dashboard")
     subparsers.add_parser("verify")
+    verify_artifacts_parser = subparsers.add_parser("verify-artifacts")
+    verify_artifacts_parser.add_argument("--package", required=True, help="Path to Evidence Package ZIP")
     subparsers.add_parser("sync")
     
     report_parser = subparsers.add_parser("report")
@@ -79,6 +82,8 @@ def main():
         elif args.command == "autopilot": run_autopilot(is_dry_run=args.dry_run, interval=args.interval)
         elif args.command == "health": run_health()
         elif args.command == "verify": run_verify()
+        elif args.command == "verify-artifacts": 
+            print(auditor.verify_evidence_package(args.package))
         elif args.command == "sync": run_sync()
         else: parser.print_help()
     except QuotaExceededError as e:
