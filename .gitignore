@@ -15,7 +15,7 @@ agent-list.txt
 GEMINI.md
 
 # Development / OS artifacts
-runner.sh
+runner.py
 .DS_Store
 node_modules/
 .pytest_cache/
@@ -36,5 +36,5 @@ htmlcov/
 
 # Skill distribution & local scripts
 scripts/
-.gemini/skills/ai-rmf-optimizer/
+.gemini/skills/
 *.skill
