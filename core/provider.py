@@ -120,9 +120,12 @@ class LLMProvider:
             "claude-3-5-sonnet": "claude-4-sonnet-20260217"
         }
         
-        # Core model for primary reasoning (The Optimizer Agent)
-        raw_model = os.getenv("AI_RMF_MODEL", "gemini/gemini-3.1-pro-preview")
-        self.model = self.model_map.get(raw_model.replace("gemini/", ""), raw_model)
+        # Core model for primary reasoning (The Auditor / Optimizer Agent)
+        raw_auditor_model = os.getenv("AI_RMF_AUDITOR_MODEL", os.getenv("AI_RMF_MODEL", "gemini/gemini-3.1-pro-preview"))
+        self.model = self.model_map.get(raw_auditor_model.replace("gemini/", ""), raw_auditor_model)
+        
+        # Target model (The application infrastructure being assessed)
+        self.target_model = os.getenv("AI_RMF_TARGET_MODEL", self.model)
         
         # Pool of test models to conserve Pro quota
         self.test_model_pool = [
@@ -140,7 +143,8 @@ class LLMProvider:
         self.target_url = os.getenv("AI_RMF_TARGET_URL")
         
         # Initialize adapters
-        self.adapter = self._initialize_adapter(self.model)
+        self.adapter = self._initialize_adapter(self.model) # The Auditor
+        self.target_adapter = self._initialize_adapter(self.target_model) # The SUT
         self.test_adapters = {m: self._initialize_adapter(m) for m in self.test_model_pool}
 
     def _initialize_adapter(self, model_id):
@@ -156,18 +160,22 @@ class LLMProvider:
     def validate_setup(self):
         if self.target_type == "api":
             if not self.adapter.api_key and "ollama" not in self.model:
-                raise ValueError(f"API Key missing for model '{self.model}'. Please set the appropriate environment variable (e.g., GOOGLE_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY) in your .env file.")
+                raise ValueError(f"API Key missing for Auditor model '{self.model}'. Please set the appropriate environment variable (e.g., GOOGLE_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY) in your .env file.")
         return True
 
-    def chat(self, messages, use_test_model=False):
+    def chat(self, messages, use_test_model=False, use_target=False):
         """
         Standard chat method. 
         If use_test_model is True, cycles through available Flash models to conserve Pro quota.
+        If use_target is True, uses the Target model (System Under Test).
         """
         if use_test_model:
             model_id = self.test_model_pool[self._test_model_index]
             self._test_model_index = (self._test_model_index + 1) % len(self.test_model_pool)
             return self.test_adapters[model_id].chat(messages)
+        
+        if use_target:
+            return self.target_adapter.chat(messages)
             
         return self.adapter.chat(messages)
 

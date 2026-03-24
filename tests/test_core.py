@@ -47,10 +47,9 @@ def test_sentry_initialization():
 
 def test_provider_model_selection():
     """Verify provider maps models correctly."""
-    with patch.dict(os.environ, {"AI_RMF_MODEL": "gemini-3.1-pro"}):
+    with patch.dict(os.environ, {"AI_RMF_AUDITOR_MODEL": "gemini-3.1-pro"}):
         from core.provider import LLMProvider
         p = LLMProvider()
-        # Mocking the actual call or just checking the property
         assert "gemini" in p.model.lower()
 
 def test_sentry_validation_mock():

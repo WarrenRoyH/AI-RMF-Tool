@@ -1,0 +1,30 @@
+# AI-RMF Sentry Middleware - Docker Compose
+# Phase 12: Portability & Multi-Platform Validation
+
+version: '3.8'
+
+services:
+  sentry-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.sentry
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./workspace:/app/workspace
+      - ./.env:/app/.env
+    environment:
+      - AI_RMF_PROXY_HOST=0.0.0.0
+      - AI_RMF_PROXY_PORT=8080
+      - PHOENIX_PORT=6006
+      - PHOENIX_PROJECT_NAME=ai-rmf-tools
+    restart: always
+
+  # Optional: Observability Dashboard (Arize Phoenix)
+  # This container handles the trace storage and UI
+  inspector-dashboard:
+    image: arizephoenix/phoenix:latest
+    ports:
+      - "6006:6006" # OTLP and UI
+      - "4317:4317" # gRPC OTLP
+    restart: always

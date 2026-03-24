@@ -101,51 +101,54 @@ fi
 # --- 6. Interactive API Setup ---
 echo ""
 if [ ! -f .env ]; then
-  echo "--> ${BLUE}Step 0.5: LLM Configuration${NC}"
-  echo "Select your preferred LLM provider:"
+  echo "--> ${BLUE}Step 0.5: LLM Configuration (Auditor & Target)${NC}"
+  echo "The 'Auditor' is the reasoning LLM that performs the assessment."
+  echo "Select your preferred Auditor LLM provider:"
   echo "  1) OpenAI (GPT-5.4 Pro, GPT-5 Nano)"
   echo "  2) Anthropic (Claude 4.6 Sonnet, Haiku)"
   echo "  3) Google (Gemini 3.1 Flash-Lite, 3.1 Pro)"
   echo "  4) Local (Ollama / vLLM)"
   echo "  5) Custom / Other"
 
-  read -p "Choice [1-5]: " CHOICE
+  read -p "Auditor Choice [1-5]: " AUDITOR_CHOICE
 
-  case $CHOICE in
-    1)
-      MODEL="gpt-5.4-pro"
-      KEY_NAME="OPENAI_API_KEY"
-      ;;
-    2)
-      MODEL="claude-4-sonnet-20260217"
-      KEY_NAME="ANTHROPIC_API_KEY"
-      ;;
-    3)
-      MODEL="gemini/gemini-3.1-flash-lite-preview"
-      KEY_NAME="GOOGLE_API_KEY"
-      ;;
-
-    4)
-      MODEL="ollama/llama3"
-      KEY_NAME="NONE"
-      echo "Note: Ensure Ollama is running at http://localhost:11434"
-      ;;
-    5)
-      read -p "Enter model ID (e.g. gpt-4): " MODEL
-      read -p "Enter API key variable name (e.g. OPENAI_API_KEY): " KEY_NAME
-      ;;
-    *)
-      echo "${RED}Invalid choice. Defaulting to OpenAI.${NC}"
-      MODEL="gpt-4o"
-      KEY_NAME="OPENAI_API_KEY"
-      ;;
+  case $AUDITOR_CHOICE in
+    1) MODEL="gpt-5.4-pro"; KEY_NAME="OPENAI_API_KEY" ;;
+    2) MODEL="claude-4-sonnet-20260217"; KEY_NAME="ANTHROPIC_API_KEY" ;;
+    3) MODEL="gemini/gemini-3.1-flash-lite-preview"; KEY_NAME="GOOGLE_API_KEY" ;;
+    4) MODEL="ollama/llama3"; KEY_NAME="NONE" ;;
+    *) MODEL="gemini/gemini-3.1-pro-preview"; KEY_NAME="GOOGLE_API_KEY" ;;
   esac
 
-  echo "AI_RMF_MODEL=$MODEL" > .env
+  echo "AI_RMF_AUDITOR_MODEL=$MODEL" > .env
   
   if [ "$KEY_NAME" != "NONE" ]; then
     read -p "Enter your $KEY_NAME: " API_KEY
     echo "$KEY_NAME=$API_KEY" >> .env
+  fi
+
+  echo ""
+  echo "The 'Target' is the application infrastructure being assessed (The SUT)."
+  echo "Is the Target the same as the Auditor? (y/n)"
+  read -p "Choice: " SAME_TARGET
+  
+  if [ "$SAME_TARGET" = "y" ] || [ "$SAME_TARGET" = "Y" ]; then
+    echo "AI_RMF_TARGET_MODEL=$MODEL" >> .env
+  else
+    echo "Select your Target LLM provider:"
+    echo "  1) OpenAI"
+    echo "  2) Anthropic"
+    echo "  3) Google"
+    echo "  4) Local (Ollama)"
+    read -p "Target Choice [1-4]: " TARGET_CHOICE
+    case $TARGET_CHOICE in
+      1) T_MODEL="gpt-4o" ;;
+      2) T_MODEL="claude-3-5-sonnet" ;;
+      3) T_MODEL="gemini/gemini-1.5-pro" ;;
+      4) T_MODEL="ollama/llama3" ;;
+      *) T_MODEL="$MODEL" ;;
+    esac
+    echo "AI_RMF_TARGET_MODEL=$T_MODEL" >> .env
   fi
 
   echo "${GREEN}--> .env file created successfully.${NC}"

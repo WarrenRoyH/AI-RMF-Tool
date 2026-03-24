@@ -28,6 +28,7 @@ from cli.dashboard import run_dashboard, run_sync
 from cli.autopilot import run_autopilot
 from cli.health import run_health
 from cli.verify import run_verify
+from core.proxy import start_proxy
 
 def main():
     parser = argparse.ArgumentParser(description="AI-RMF Lifecycle Tools (NIST 1.0)")
@@ -36,6 +37,7 @@ def main():
     subparsers.add_parser("govern")
     subparsers.add_parser("map")
     subparsers.add_parser("manage")
+    subparsers.add_parser("proxy")
     
     measure_parser = subparsers.add_parser("measure")
     measure_parser.add_argument("--type", choices=["audit", "promptfoo", "garak"], help="Assessment type to run")
@@ -67,6 +69,7 @@ def main():
         if args.command == "govern": run_govern()
         elif args.command == "map": run_map()
         elif args.command == "manage": run_manage()
+        elif args.command == "proxy": start_proxy()
         elif args.command == "measure": 
             run_measure(is_autopilot=args.autopilot, assessment_type=args.type)
         elif args.command == "remediate": run_remediate(is_dry_run=args.dry_run)

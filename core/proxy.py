@@ -119,7 +119,9 @@ async def chat_proxy(request: Request):
         }]
     }
 
-def start_proxy(host="127.0.0.1", port=8080):
+def start_proxy():
+    host = os.getenv("AI_RMF_PROXY_HOST", "0.0.0.0")
+    port = int(os.getenv("AI_RMF_PROXY_PORT", "8080"))
     print(f"--> AI-RMF Sentry Proxy starting on {host}:{port}")
     uvicorn.run(app, host=host, port=port)
 

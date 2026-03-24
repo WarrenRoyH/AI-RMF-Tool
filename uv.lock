@@ -63,6 +63,13 @@ full = [
     { name = "markdown" },
     { name = "xhtml2pdf" },
 ]
+middleware = [
+    { name = "fastapi" },
+    { name = "openinference-instrumentation-openai" },
+    { name = "opentelemetry-exporter-otlp-proto-http" },
+    { name = "opentelemetry-sdk" },
+    { name = "uvicorn" },
+]
 standard = [
     { name = "garak" },
     { name = "llm-guard" },
@@ -75,11 +82,15 @@ standard = [
 [package.metadata]
 requires-dist = [
     { name = "arize-phoenix", marker = "extra == 'full'" },
+    { name = "fastapi", marker = "extra == 'middleware'" },
     { name = "garak", marker = "extra == 'standard'" },
     { name = "litellm" },
     { name = "llm-guard", marker = "extra == 'standard'" },
     { name = "markdown", marker = "extra == 'full'" },
     { name = "numpy", specifier = "==2.2.3" },
+    { name = "openinference-instrumentation-openai", marker = "extra == 'middleware'" },
+    { name = "opentelemetry-exporter-otlp-proto-http", marker = "extra == 'middleware'" },
+    { name = "opentelemetry-sdk", marker = "extra == 'middleware'" },
     { name = "pip-audit", marker = "extra == 'standard'" },
     { name = "psutil" },
     { name = "pydantic" },
@@ -89,9 +100,10 @@ requires-dist = [
     { name = "spacy", marker = "extra == 'standard'" },
     { name = "tf-keras", marker = "extra == 'standard'" },
     { name = "transformers", marker = "extra == 'standard'", specifier = "==4.57.6" },
+    { name = "uvicorn", marker = "extra == 'middleware'" },
     { name = "xhtml2pdf", marker = "extra == 'full'" },
 ]
-provides-extras = ["standard", "full"]
+provides-extras = ["standard", "full", "middleware"]
 
 [[package]]
 name = "aiohappyeyeballs"

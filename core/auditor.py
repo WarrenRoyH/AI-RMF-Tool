@@ -131,7 +131,7 @@ class Auditor:
         report_prefix = garak_report_dir / f"garak_scan_{timestamp}"
         with open(self.manifest_path, 'r') as f: manifest = json.load(f)
         prohibited = manifest['safety_policy'].get('prohibited_content', [])
-        model = os.getenv("AI_RMF_MODEL", "gemini/gemini-3.1-flash-lite-preview")
+        model = os.getenv("AI_RMF_TARGET_MODEL", os.getenv("AI_RMF_AUDITOR_MODEL", os.getenv("AI_RMF_MODEL", "gemini/gemini-3.1-flash-lite-preview")))
         if slim_mode: probes = ["dan"]
         else:
             probes = ["dan"] 

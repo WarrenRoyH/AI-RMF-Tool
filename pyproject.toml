@@ -29,6 +29,13 @@ full = [
     "markdown",
     "xhtml2pdf",
 ]
+middleware = [
+    "fastapi",
+    "uvicorn",
+    "openinference-instrumentation-openai",
+    "opentelemetry-sdk",
+    "opentelemetry-exporter-otlp-proto-http",
+]
 
 [tool.uv]
 managed = true
