@@ -15,9 +15,11 @@ class TestRedTeamCli(unittest.TestCase):
     @patch('cli.red_team.check_setup')
     @patch('cli.red_team.MANIFEST_PATH')
     @patch('cli.red_team.red_teamer')
-    def test_run_red_team_from_manifest(self, mock_red_teamer, mock_manifest_path, mock_check_setup):
+    @patch('cli.red_team.questionary.select')
+    def test_run_red_team_from_manifest(self, mock_select, mock_red_teamer, mock_manifest_path, mock_check_setup):
         mock_manifest_path.exists.return_value = True
         mock_manifest_content = json.dumps({"ai_bom": {"target_url": "http://test.ai"}})
+        mock_select.return_value.ask.return_value = "static"
         
         with patch('builtins.open', mock_open(read_data=mock_manifest_content)):
             run_red_team()
@@ -26,10 +28,12 @@ class TestRedTeamCli(unittest.TestCase):
     @patch('cli.red_team.check_setup')
     @patch('cli.red_team.MANIFEST_PATH')
     @patch('cli.red_team.red_teamer')
-    @patch('questionary.text')
-    def test_run_red_team_interactive(self, mock_text, mock_red_teamer, mock_manifest_path, mock_check_setup):
+    @patch('cli.red_team.questionary.text')
+    @patch('cli.red_team.questionary.select')
+    def test_run_red_team_interactive(self, mock_select, mock_text, mock_red_teamer, mock_manifest_path, mock_check_setup):
         mock_manifest_path.exists.return_value = False
         mock_text.return_value.ask.return_value = "http://manual.ai"
+        mock_select.return_value.ask.return_value = "static"
         
         with patch.dict(os.environ, {}, clear=True):
             if "AI_RMF_TARGET_URL" in os.environ: del os.environ["AI_RMF_TARGET_URL"]
