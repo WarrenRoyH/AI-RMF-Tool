@@ -116,8 +116,14 @@ class LLMProvider:
             "gemini-3-flash": "gemini/gemini-3-flash-preview",
             "gemini-2.5-flash": "gemini/gemini-2.5-flash",
             "gemini-2.5-flash-lite": "gemini/gemini-2.5-flash-lite",
-            "gpt-4o": "gpt-5.4-pro",
-            "claude-3-5-sonnet": "claude-4-sonnet-20260217"
+            "gpt-5.4-pro": "openai/gpt-5.4-pro",
+            "gpt-5-nano": "openai/gpt-5-nano",
+            "claude-4.6-sonnet": "anthropic/claude-4.6-sonnet-20260217",
+            "claude-4-sonnet": "anthropic/claude-4.0-sonnet-20260217",
+            "deepseek-r1": "deepseek/deepseek-r1",
+            "deepseek-r2-lite": "deepseek/deepseek-r2-lite-202603",
+            "gpt-4o": "openai/gpt-5.4-pro",
+            "claude-3-5-sonnet": "anthropic/claude-4.0-sonnet-20260217"
         }
         
         # Core model for primary reasoning (The Auditor / Optimizer Agent)

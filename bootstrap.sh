@@ -107,17 +107,19 @@ if [ ! -f .env ]; then
   echo "  1) OpenAI (GPT-5.4 Pro, GPT-5 Nano)"
   echo "  2) Anthropic (Claude 4.6 Sonnet, Haiku)"
   echo "  3) Google (Gemini 3.1 Flash-Lite, 3.1 Pro)"
-  echo "  4) Local (Ollama / vLLM)"
-  echo "  5) Custom / Other"
+  echo "  4) DeepSeek (DeepSeek R1, R2-Lite)"
+  echo "  5) Local (Ollama / vLLM)"
+  echo "  6) Custom / Other"
 
-  read -p "Auditor Choice [1-5]: " AUDITOR_CHOICE
+  read -p "Auditor Choice [1-6]: " AUDITOR_CHOICE
 
   case $AUDITOR_CHOICE in
     1) MODEL="gpt-5.4-pro"; KEY_NAME="OPENAI_API_KEY" ;;
-    2) MODEL="claude-4-sonnet-20260217"; KEY_NAME="ANTHROPIC_API_KEY" ;;
-    3) MODEL="gemini/gemini-3.1-flash-lite-preview"; KEY_NAME="GOOGLE_API_KEY" ;;
-    4) MODEL="ollama/llama3"; KEY_NAME="NONE" ;;
-    *) MODEL="gemini/gemini-3.1-pro-preview"; KEY_NAME="GOOGLE_API_KEY" ;;
+    2) MODEL="claude-4.6-sonnet"; KEY_NAME="ANTHROPIC_API_KEY" ;;
+    3) MODEL="gemini-3.1-pro"; KEY_NAME="GOOGLE_API_KEY" ;;
+    4) MODEL="deepseek-r1"; KEY_NAME="DEEPSEEK_API_KEY" ;;
+    5) MODEL="ollama/llama3"; KEY_NAME="NONE" ;;
+    *) MODEL="gemini-3.1-pro"; KEY_NAME="GOOGLE_API_KEY" ;;
   esac
 
   echo "AI_RMF_AUDITOR_MODEL=$MODEL" > .env
@@ -139,13 +141,15 @@ if [ ! -f .env ]; then
     echo "  1) OpenAI"
     echo "  2) Anthropic"
     echo "  3) Google"
-    echo "  4) Local (Ollama)"
-    read -p "Target Choice [1-4]: " TARGET_CHOICE
+    echo "  4) DeepSeek"
+    echo "  5) Local (Ollama)"
+    read -p "Target Choice [1-5]: " TARGET_CHOICE
     case $TARGET_CHOICE in
-      1) T_MODEL="gpt-4o" ;;
-      2) T_MODEL="claude-3-5-sonnet" ;;
-      3) T_MODEL="gemini/gemini-1.5-pro" ;;
-      4) T_MODEL="ollama/llama3" ;;
+      1) T_MODEL="gpt-5.4-pro" ;;
+      2) T_MODEL="claude-4.6-sonnet" ;;
+      3) T_MODEL="gemini-3.1-pro" ;;
+      4) T_MODEL="deepseek-r1" ;;
+      5) T_MODEL="ollama/llama3" ;;
       *) T_MODEL="$MODEL" ;;
     esac
     echo "AI_RMF_TARGET_MODEL=$T_MODEL" >> .env
