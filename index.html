@@ -255,6 +255,80 @@
         }
         .metric-val { font-size: 1.5rem; font-weight: 800; color: var(--text); }
         .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+
+        /* Connectivity Matrix */
+        .conn-matrix {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .conn-node {
+            padding: 1rem;
+            border-radius: 12px;
+            background: #fff;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #cbd5e1;
+        }
+        .status-dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        .status-dot.offline { background: #ef4444; }
+
+        /* Live Console */
+        .live-console {
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: 0.85rem;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            white-space: pre-wrap;
+        }
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: #94a3b8;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .control-btn {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .control-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+        .control-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
     </style>
 </head>
 <body>
@@ -264,6 +338,22 @@
         <!-- Section 0: Compliance Dashboard (Dynamic) -->
         <div id="dashboard">
             <h1 style="margin-bottom: 2rem;">Compliance Dashboard</h1>
+            
+            <!-- Connectivity Matrix -->
+            <div class="conn-matrix">
+                <div class="conn-node">
+                    <div id="status-auditor" class="status-dot"></div>
+                    Auditor Engine
+                </div>
+                <div class="conn-node">
+                    <div id="status-proxy" class="status-dot"></div>
+                    Sentry Proxy
+                </div>
+                <div class="conn-node">
+                    <div id="status-target" class="status-dot"></div>
+                    Target Application
+                </div>
+            </div>
             
             <!-- Project Manifest Info -->
             <div id="project-info" style="display: none; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; background: var(--primary-light); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--primary);">
@@ -311,6 +401,28 @@
             <div id="remediation-section" style="display: none; margin-top: 2.5rem;">
                 <h3 style="font-weight: 800; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem;">NIST Remediation Roadmap</h3>
                 <ul id="roadmap-list" style="padding-left: 1.5rem; color: var(--text-muted);"></ul>
+            </div>
+
+            <!-- Control Panel -->
+            <div style="margin-top: 2.5rem;">
+                <h3 style="font-weight: 800; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem;">Remote Control Plane</h3>
+                <div class="control-panel">
+                    <div class="control-btn" onclick="runCommand('govern')">Run GOVERN</div>
+                    <div class="control-btn" onclick="runCommand('map')">Run MAP</div>
+                    <div class="control-btn" onclick="runCommand('measure')">Run MEASURE</div>
+                    <div class="control-btn" onclick="runCommand('autopilot')">Run AUTOPILOT</div>
+                </div>
+            </div>
+
+            <!-- Live Console -->
+            <div id="console-section" style="display: none; margin-top: 2rem;">
+                <div class="live-console" id="live-console">
+                    <div class="console-header">
+                        <span>Live Execution Stream</span>
+                        <span id="console-status">Connecting...</span>
+                    </div>
+                    <div id="console-output"></div>
+                </div>
             </div>
 
             <div id="vuln-section" style="display: none; margin-top: 1.5rem;">
@@ -553,28 +665,45 @@
     const state = { flavor: 'standard', sandbox: 'none', offline: false };
 
     // --- Dashboard Initialization ---
-    function initDashboard() {
-        if (typeof PROJECT_MANIFEST !== 'undefined' && PROJECT_MANIFEST) {
+    async function initDashboard() {
+        // First, try to fetch from API (GUI 2.0 Mode)
+        try {
+            const manifestRes = await fetch('/manifest');
+            if (manifestRes.ok) {
+                const manifest = await manifestRes.json();
+                if (Object.keys(manifest).length > 0) window.PROJECT_MANIFEST = manifest;
+            }
+            
+            const auditRes = await fetch('/audit-data');
+            if (auditRes.ok) {
+                const auditData = await auditRes.json();
+                if (Object.keys(auditData).length > 0) window.LATEST_AUDIT_DATA = auditData;
+            }
+        } catch (err) {
+            console.log("API not reachable, falling back to embedded data.");
+        }
+
+        if (typeof PROJECT_MANIFEST !== 'undefined' && PROJECT_MANIFEST && Object.keys(PROJECT_MANIFEST).length > 0) {
             document.getElementById('project-info').style.display = 'grid';
             document.getElementById('manifest-name').innerText = PROJECT_MANIFEST.project_name || 'N/A';
-            document.getElementById('manifest-model').innerText = PROJECT_MANIFEST.ai_bom.model_id || 'N/A';
-            document.getElementById('manifest-tier').innerText = (PROJECT_MANIFEST.risk_profile.tier || 'N/A').toUpperCase();
+            document.getElementById('manifest-model').innerText = (PROJECT_MANIFEST.ai_bom && PROJECT_MANIFEST.ai_bom.model_id) || 'N/A';
+            document.getElementById('manifest-tier').innerText = (PROJECT_MANIFEST.risk_profile && PROJECT_MANIFEST.risk_profile.tier || 'N/A').toUpperCase();
 
             // Initialize Policy Editor
             document.getElementById('policy-editor').style.display = 'block';
-            const tags = PROJECT_MANIFEST.safety_policy.prohibited_content || [];
+            const tags = (PROJECT_MANIFEST.safety_policy && PROJECT_MANIFEST.safety_policy.prohibited_content) || [];
             renderTags(tags);
-            document.getElementById('pii-toggle').checked = PROJECT_MANIFEST.safety_policy.pii_protection || false;
-            document.getElementById('hitl-toggle').checked = PROJECT_MANIFEST.safety_policy.manual_review_required || false;
+            document.getElementById('pii-toggle').checked = (PROJECT_MANIFEST.safety_policy && PROJECT_MANIFEST.safety_policy.pii_protection) || false;
+            document.getElementById('hitl-toggle').checked = (PROJECT_MANIFEST.safety_policy && PROJECT_MANIFEST.safety_policy.manual_review_required) || false;
         }
 
-        if (typeof LATEST_AUDIT_DATA !== 'undefined' && LATEST_AUDIT_DATA) {
+        if (typeof LATEST_AUDIT_DATA !== 'undefined' && LATEST_AUDIT_DATA && Object.keys(LATEST_AUDIT_DATA).length > 0) {
             document.getElementById('dashboard').classList.add('active');
             document.getElementById('db-score').innerText = LATEST_AUDIT_DATA.score || '0%';
-            document.getElementById('db-accuracy').innerText = LATEST_AUDIT_DATA.metrics.accuracy || 'N/A';
-            document.getElementById('db-hits').innerText = LATEST_AUDIT_DATA.metrics.garak_hits || '0';
-            document.getElementById('db-bias').innerText = LATEST_AUDIT_DATA.metrics.bias || 'N/A';
-            document.getElementById('db-time').innerText = new Date(LATEST_AUDIT_DATA.timestamp).toLocaleString();
+            document.getElementById('db-accuracy').innerText = (LATEST_AUDIT_DATA.metrics && LATEST_AUDIT_DATA.metrics.accuracy) || 'N/A';
+            document.getElementById('db-hits').innerText = (LATEST_AUDIT_DATA.metrics && LATEST_AUDIT_DATA.metrics.garak_hits) || '0';
+            document.getElementById('db-bias').innerText = (LATEST_AUDIT_DATA.metrics && LATEST_AUDIT_DATA.metrics.bias) || 'N/A';
+            document.getElementById('db-time').innerText = LATEST_AUDIT_DATA.timestamp ? new Date(LATEST_AUDIT_DATA.timestamp).toLocaleString() : 'Never';
             
             if (LATEST_AUDIT_DATA.report_html) {
                 document.getElementById('report-content').innerHTML = LATEST_AUDIT_DATA.report_html;
@@ -604,6 +733,66 @@
             }
         }
     }
+
+    // --- Control Panel & Log Streaming ---
+    async function runCommand(cmd) {
+        const consoleSection = document.getElementById('console-section');
+        consoleSection.style.display = 'block';
+        document.getElementById('console-output').innerHTML = `\n[SYSTEM]: Triggering '${cmd}' command...\n`;
+        
+        try {
+            const res = await fetch(`/run/${cmd}`, { method: 'POST' });
+            if (res.ok) {
+                initLogStream();
+            } else {
+                const err = await res.json();
+                document.getElementById('console-output').innerHTML += `\n[ERROR]: ${err.detail}\n`;
+            }
+        } catch (err) {
+            document.getElementById('console-output').innerHTML += `\n[ERROR]: Could not reach backend.\n`;
+        }
+    }
+
+    let eventSource = null;
+    function initLogStream() {
+        if (eventSource) eventSource.close();
+        
+        document.getElementById('console-status').innerText = "Streaming Logs...";
+        eventSource = new EventSource('/logs/stream');
+        
+        eventSource.onmessage = (e) => {
+            const output = document.getElementById('console-output');
+            output.innerText += e.data;
+            const consoleDiv = document.getElementById('live-console');
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            
+            // Auto-refresh dashboard if command finishes
+            if (e.data.includes("Cycle complete") || e.data.includes("Audit Complete")) {
+                setTimeout(initDashboard, 2000);
+            }
+        };
+        
+        eventSource.onerror = (err) => {
+            document.getElementById('console-status').innerText = "Stream Disconnected";
+            eventSource.close();
+        };
+    }
+
+    async function updateHealth() {
+        try {
+            const res = await fetch('/health');
+            if (res.ok) {
+                const status = await res.json();
+                Object.keys(status).forEach(node => {
+                    const el = document.getElementById(`status-${node}`);
+                    if (el) {
+                        el.className = `status-dot ${status[node]}`;
+                    }
+                });
+            }
+        } catch (err) {}
+    }
+
     // --- Sentry Violation Logic ---
     async function fetchViolations() {
         try {
@@ -653,12 +842,14 @@
         } catch (err) { console.error('Failed to handle violation:', err); }
     }
 
-    // Polling for violations
+    // Polling for violations and health
     setInterval(fetchViolations, 5000);
+    setInterval(updateHealth, 10000);
 
     window.onload = () => {
         initDashboard();
         fetchViolations();
+        updateHealth();
     };
 
     function toggleReport() {

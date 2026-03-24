@@ -40,8 +40,16 @@ def run_verify():
         try:
             with open(pf_results_path, 'r') as f:
                 pf_data = json.load(f)
-                results_list = pf_data.get('results', {}).get('results', [])
-                if not results_list and 'results' in pf_data: results_list = pf_data['results']
+                results_list = []
+                if isinstance(pf_data.get('results'), dict):
+                    results_list = pf_data.get('results', {}).get('results', [])
+                elif isinstance(pf_data.get('results'), list):
+                    results_list = pf_data.get('results')
+                elif isinstance(pf_data.get('results'), list): # Handle other variations
+                    results_list = pf_data['results']
+                
+                if not results_list and 'results' in pf_data:
+                    results_list = pf_data['results']
                 if isinstance(results_list, list):
                     for r in results_list:
                         if isinstance(r, dict) and not r.get('success', True):

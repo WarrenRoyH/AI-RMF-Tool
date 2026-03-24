@@ -1,6 +1,8 @@
 import json
 import os
 import questionary
+from datetime import datetime
+from pathlib import Path
 from questionary import Choice
 from cli.utils import check_setup, MANIFEST_PATH, ADVERSARY_PROMPT_PATH
 from core.discovery import discovery
@@ -59,7 +61,7 @@ def run_map(is_autopilot=False, is_dry_run=False):
         # --- NIST Artifact Export (Phase 11) ---
         artifact = {
             "phase": "MAP",
-            "timestamp": __import__("datetime").datetime.now().isoformat(),
+            "timestamp": datetime.now().isoformat(),
             "nist_mappings": {
                 "MP-1.1": "AI system context and domain analyzed.",
                 "MP-2.1": "Potential risks and impacts identified.",

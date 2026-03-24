@@ -14,9 +14,33 @@ logging.getLogger("transformers").setLevel(logging.ERROR)
 
 import argparse
 import sys
+from pathlib import Path
 from core.provider import QuotaExceededError
 
+# --- LOGGING SYSTEM (Phase 16: Live Execution Streaming) ---
+class Tee(object):
+    def __init__(self, *files):
+        self.files = files
+    def write(self, obj):
+        for f in self.files:
+            f.write(obj)
+            f.flush() # If you want the output to be visible immediately
+    def flush(self):
+        for f in self.files:
+            f.flush()
+
+def setup_execution_logging(mode='a'):
+    log_dir = Path("workspace/logs")
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_file = log_dir / "ai-rmf.log"
+    
+    f = open(log_file, mode)
+    sys.stdout = Tee(sys.stdout, f)
+    sys.stderr = Tee(sys.stderr, f)
+    return f
+
 # Import CLI modules
+from cli.setup import run_setup
 from cli.govern import run_govern
 from cli.map import run_map
 from cli.manage import run_manage
@@ -35,6 +59,7 @@ def main():
     parser = argparse.ArgumentParser(description="AI-RMF Lifecycle Tools (NIST 1.0)")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose logging for NIST mapping")
     subparsers = parser.add_subparsers(dest="command")
+    subparsers.add_parser("setup")
     subparsers.add_parser("govern")
     subparsers.add_parser("map")
     subparsers.add_parser("manage")
@@ -64,12 +89,16 @@ def main():
     subparsers.add_parser("health")
 
     args = parser.parse_args()
+    log_mode = 'a' if os.environ.get("AI_RMF_SUBPROCESS") else 'w'
+    log_file = setup_execution_logging(mode=log_mode)
+    
     if args.verbose:
         os.environ["AI_RMF_VERBOSE"] = "true"
         logging.getLogger().setLevel(logging.INFO)
 
     try:
-        if args.command == "govern": run_govern()
+        if args.command == "setup": run_setup()
+        elif args.command == "govern": run_govern()
         elif args.command == "map": run_map()
         elif args.command == "manage": run_manage()
         elif args.command == "proxy": start_proxy()
@@ -93,6 +122,8 @@ def main():
     except KeyboardInterrupt:
         print("\nSession interrupted.")
         sys.exit(0)
+    finally:
+        log_file.close()
 
 if __name__ == "__main__":
     main()

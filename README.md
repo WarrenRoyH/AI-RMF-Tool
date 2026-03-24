@@ -1,5 +1,8 @@
 # AI-RMF Lifecycle Tools
 
+![CI Status](https://github.com/WarrenRoyH/ai-rmf-tools/actions/workflows/ci.yml/badge.svg)
+![Coverage](https://codecov.io/gh/WarrenRoyH/ai-rmf-tools/branch/main/graph/badge.svg)
+
 An automated, persona-driven toolkit designed to operationalize the **NIST AI Risk Management Framework (AI RMF) 1.0**. 
 
 This project provides a modular suite of open-source agents that handle the **Govern, Map, Measure, and Manage** functions of the NIST framework, ensuring your AI applications are secure, transparent, and compliant.
@@ -78,6 +81,13 @@ Run the Architect wizard (via bootstrap.sh) or check your environment:
 ./ai-rmf health
 ```
 *The health check verifies workspace structure, library dependencies, and API connectivity for both primary and test model pools.*
+
+### Step 0: Initial Setup (The Wizard)
+New to AI-RMF? Use the intent-based setup wizard to scaffold your project manifest in seconds.
+```bash
+./ai-rmf setup
+```
+*The Librarian will ask for a brief description of your project and generate a NIST-aligned manifest draft.*
 
 ### Step 1: Start Governance (The Librarian)
 Generate your NIST AI-RMF manifest:

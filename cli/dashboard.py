@@ -2,9 +2,11 @@ import webbrowser
 import os
 import json
 import uvicorn
+import asyncio
+import subprocess
 from pathlib import Path
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from cli.utils import check_setup
 from core.inspector import inspector
 
@@ -16,6 +18,7 @@ WORKSPACE_DIR = BASE_DIR / "workspace"
 MANIFEST_PATH = WORKSPACE_DIR / "project-manifest.json"
 SUMMARY_PATH = WORKSPACE_DIR / "reports" / "summary.json"
 INDEX_PATH = BASE_DIR / "index.html"
+EXEC_LOG_PATH = WORKSPACE_DIR / "logs" / "ai-rmf.log"
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
@@ -23,6 +26,20 @@ async def read_index():
         raise HTTPException(status_code=404, detail="index.html not found")
     with open(INDEX_PATH, "r") as f:
         return f.read()
+
+@app.get("/manifest")
+async def get_manifest():
+    if not MANIFEST_PATH.exists():
+        return {}
+    with open(MANIFEST_PATH, 'r') as f:
+        return json.load(f)
+
+@app.get("/audit-data")
+async def get_audit_data():
+    if not SUMMARY_PATH.exists():
+        return {}
+    with open(SUMMARY_PATH, 'r') as f:
+        return json.load(f)
 
 @app.post("/sync")
 async def sync_manifest(request: Request):
@@ -93,6 +110,68 @@ async def sentry_action(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/logs/stream")
+async def stream_logs():
+    async def log_generator():
+        if not EXEC_LOG_PATH.exists():
+            yield "data: [SYSTEM] Execution log not found yet.\n\n"
+            # Wait for it to be created
+            while not EXEC_LOG_PATH.exists():
+                await asyncio.sleep(1)
+        
+        # Open the file and seek to the end or start depending on preference
+        # For now, let's just start from the beginning of the current session
+        with open(EXEC_LOG_PATH, "r") as f:
+            # Optionally seek to the end if you only want new logs: f.seek(0, 2)
+            while True:
+                line = f.readline()
+                if not line:
+                    await asyncio.sleep(0.5)
+                    continue
+                yield f"data: {line}\n\n"
+
+    return StreamingResponse(log_generator(), media_type="text/event-stream")
+
+@app.post("/run/{command}")
+async def run_command(command: str):
+    allowed_commands = ["govern", "map", "measure", "manage", "autopilot", "verify", "remediate", "health"]
+    if command not in allowed_commands:
+        raise HTTPException(status_code=400, detail="Command not allowed")
+    
+    # We run the command as a subprocess using the ai-rmf wrapper
+    # This ensures it runs in the same environment and logs to ai-rmf.log
+    cmd_list = ["./ai-rmf", command]
+    
+    # Run in background to not block FastAPI
+    try:
+        env = os.environ.copy()
+        env["AI_RMF_SUBPROCESS"] = "true"
+        subprocess.Popen(cmd_list, cwd=str(BASE_DIR), env=env)
+        return {"status": "success", "message": f"Command '{command}' started."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/health")
+async def get_health_status():
+    # Basic connectivity check for the Connectivity Matrix
+    # 1. Auditor (API Check)
+    # 2. Proxy (Running?)
+    # 3. Target (Is proxy reachable?)
+    status = {
+        "auditor": "online", # We assume if dashboard is running, auditor is reachable
+        "proxy": "offline",
+        "target": "offline"
+    }
+    
+    # Check if proxy is running (port 8000)
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        if s.connect_ex(('localhost', 8000)) == 0:
+            status["proxy"] = "online"
+            status["target"] = "online" # If proxy is up, target connectivity is proxied
+            
+    return status
+
 def run_sync():
     """Manually synchronizes the workspace state with the GUI (index.html)."""
     check_setup()
@@ -149,6 +228,9 @@ def run_dashboard():
     print("--> [HINT]: Use the 'Safety Policy Editor' in the UI to push changes back to the CLI.")
     
     # Open browser in a separate thread/process or just before starting uvicorn
-    webbrowser.open("http://localhost:8888")
+    try:
+        webbrowser.open("http://localhost:8888")
+    except:
+        pass
     
     uvicorn.run(app, host="0.0.0.0", port=8888, log_level="error")

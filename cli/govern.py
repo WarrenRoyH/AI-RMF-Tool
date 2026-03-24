@@ -1,7 +1,8 @@
 import json
 import questionary
+from datetime import datetime
 from questionary import Choice
-from cli.utils import check_setup, MANIFEST_PATH, LIBRARIAN_PROMPT_PATH
+from cli.utils import check_setup, MANIFEST_PATH, LIBRARIAN_PROMPT_PATH, WORKSPACE_DIR
 from core.discovery import discovery
 from core.provider import provider
 from core.auditor import auditor

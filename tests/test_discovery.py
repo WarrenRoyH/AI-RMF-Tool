@@ -51,8 +51,8 @@ def test_scan_project_code_mock():
          patch('pathlib.Path.read_text', return_value=mock_requirements), \
          patch('os.walk', return_value=[(str(Path.cwd()), ('subdir',), ('main.py',))]):
         findings = discovery.scan_project_code()
-        assert "requirements.txt: openai" in findings["libraries"]
-        assert "requirements.txt: langchain" in findings["libraries"]
+        assert any(l["file"] == "requirements.txt" and l["keyword"] == "openai" for l in findings["libraries"])
+        assert any(l["file"] == "requirements.txt" and l["keyword"] == "langchain" for l in findings["libraries"])
 
 def test_detect_purpose_mock():
     """Test purpose detection."""
