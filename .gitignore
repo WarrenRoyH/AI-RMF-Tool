@@ -1,40 +1,23 @@
+# Local project workspace (contains logs, reports, and policies)
+workspace/
+
 # Core sensitive files
 .env
 .venv/
 __pycache__/
 *.pyc
 
-# Local project workspace (contains logs, reports, and policies)
-# This is ignored because it often contains model outputs and potentially sensitive data.
-workspace/
-
-# Documentation and temporary lists
+# Metadata and orchestrators (ignored as per user preference)
 ROADMAP.md
-librarian-needs.txt
-agent-list.txt
-GEMINI.md
-
-# Development / OS artifacts
 runner.py
+GEMINI.md
+.gemini/skills/
+scripts/
+
+# OS artifacts
 .DS_Store
 node_modules/
 .pytest_cache/
 .coverage
 htmlcov/
 *.log
-
-# Secrets and keys (safety net)
-**/*.key
-**/*.pem
-**/*.json.key
-**/*.secret
-**/credentials.json
-**/secrets.json
-**/api_keys.json
-**/config.local.json
-**/config.private.json
-
-# Skill distribution & local scripts
-scripts/
-.gemini/skills/
-*.skill

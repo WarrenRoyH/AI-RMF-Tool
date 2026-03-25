@@ -1,0 +1,16 @@
+librarian-needs.txt:
+- Project Name
+- AI-BOM (Inventory):
+    - Model ID
+    - Version
+    - Provider
+- Risk Profile:
+    - Risk Tier (Low, Medium, High)
+    - Domain (Intended users / Specific use-case)
+- Safety Policy:
+    - Prohibited Content Domains (e.g., PII, medical, financial)
+    - PII Protection Requirement (Boolean)
+    - Manual Review Required (Boolean)
+- Benchmarks:
+    - Target Accuracy (Float)
+    - Bias Threshold (Float)
