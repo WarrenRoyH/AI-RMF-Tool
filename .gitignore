@@ -17,6 +17,8 @@ scripts/
 # OS artifacts
 .DS_Store
 node_modules/
+# Test artifacts
+tests/
 .pytest_cache/
 .coverage
 htmlcov/
