@@ -4,7 +4,7 @@ import questionary
 from datetime import datetime
 from pathlib import Path
 from questionary import Choice
-from cli.utils import check_setup, MANIFEST_PATH, ADVERSARY_PROMPT_PATH
+from cli.utils import check_setup, MANIFEST_PATH, ADVERSARY_PROMPT_PATH, REPORT_DIR
 from core.discovery import discovery
 from core.provider import provider
 from core.auditor import auditor
@@ -69,7 +69,8 @@ def run_map(is_autopilot=False, is_dry_run=False):
             },
             "analysis_summary": response
         }
-        artifact_path = Path("workspace/reports/threat_artifact.json")
+        
+        artifact_path = REPORT_DIR / "threat_artifact.json"
         artifact_path.parent.mkdir(parents=True, exist_ok=True)
         with open(artifact_path, 'w') as f:
             json.dump(artifact, f, indent=4)
@@ -107,3 +108,5 @@ def run_map(is_autopilot=False, is_dry_run=False):
     elif action == "manage":
         from cli.manage import run_manage
         run_manage()
+    elif action == "exit":
+        return

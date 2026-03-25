@@ -1,0 +1,8 @@
+{
+  "name": "Red Teamer",
+  "role": "adversary",
+  "nist_focus": ["MAP", "MEASURE"],
+  "allowed_namespaces": ["TARGET"],
+  "scoring_weight": 0.2,
+  "system_prompt_path": "red_teamer_prompt.md"
+}

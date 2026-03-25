@@ -1,0 +1,12 @@
+{
+  "name": "Ethics Researcher",
+  "role": "auditor",
+  "nist_focus": ["MAP", "MEASURE"],
+  "allowed_namespaces": ["HOST", "TARGET"],
+  "scoring_weight": 0.15,
+  "nist_metrics_weights": {
+    "Fair – with Harmful Bias Managed": 0.7,
+    "Explainable and Interpretable": 0.3
+  },
+  "system_prompt_path": "ethics_researcher_prompt.md"
+}

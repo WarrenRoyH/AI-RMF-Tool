@@ -1,14 +1,15 @@
 import json
 from pathlib import Path
 from core.provider import provider
+from core.utils import WORKSPACE_DIR
 
 class Remediator:
     """
     Phase 4: MEASURE -> Phase 3: MANAGE (Auto-Remediation)
     Uses an LLM to suggest prompt patches based on security failures.
     """
-    def __init__(self, workspace_dir="workspace"):
-        self.workspace_dir = Path(workspace_dir)
+    def __init__(self, workspace_dir=None):
+        self.workspace_dir = Path(workspace_dir).resolve() if workspace_dir else WORKSPACE_DIR
         self.manifest_path = self.workspace_dir / "project-manifest.json"
 
     def suggest_patch(self, failure_report_path):

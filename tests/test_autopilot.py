@@ -9,8 +9,9 @@ from pathlib import Path
 @patch("cli.autopilot.run_manage")
 @patch("cli.autopilot.run_measure")
 @patch("cli.autopilot.time.sleep")
+@patch("cli.autopilot.check_setup")
 @patch("questionary.confirm")
-def test_autopilot_single_run(mock_confirm, mock_sleep, mock_measure, mock_manage, mock_map, mock_govern, mock_manifest):
+def test_autopilot_single_run(mock_confirm, mock_check_setup, mock_sleep, mock_measure, mock_manage, mock_map, mock_govern, mock_manifest):
     """Verify autopilot runs exactly once when interval is 0."""
     mock_manifest.exists.return_value = True
     
@@ -31,7 +32,8 @@ def test_autopilot_single_run(mock_confirm, mock_sleep, mock_measure, mock_manag
 @patch("cli.autopilot.run_manage")
 @patch("cli.autopilot.run_measure")
 @patch("cli.autopilot.time.sleep")
-def test_autopilot_loop(mock_sleep, mock_measure, mock_manage, mock_map, mock_govern, mock_manifest):
+@patch("cli.autopilot.check_setup")
+def test_autopilot_loop(mock_check_setup, mock_sleep, mock_measure, mock_manage, mock_map, mock_govern, mock_manifest):
     """Verify autopilot loops when interval is > 0."""
     mock_manifest.exists.return_value = True
     

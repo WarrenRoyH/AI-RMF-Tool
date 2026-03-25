@@ -259,7 +259,7 @@
         /* Connectivity Matrix */
         .conn-matrix {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 1rem;
             margin-bottom: 2rem;
         }
@@ -282,6 +282,8 @@
         }
         .status-dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
         .status-dot.offline { background: #ef4444; }
+        .status-dot.insecure { background: var(--warning); box-shadow: 0 0 8px var(--warning); }
+        .status-dot.missing { background: #94a3b8; }
 
         /* Live Console */
         .live-console {
@@ -344,6 +346,10 @@
                 <div class="conn-node">
                     <div id="status-auditor" class="status-dot"></div>
                     Auditor Engine
+                </div>
+                <div class="conn-node">
+                    <div id="status-vault" class="status-dot"></div>
+                    Vault Isolation
                 </div>
                 <div class="conn-node">
                     <div id="status-proxy" class="status-dot"></div>

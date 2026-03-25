@@ -31,8 +31,11 @@ except ImportError:
     print("--> [PROXY]: OpenInference or OpenTelemetry not found. Tracing disabled.")
 # -------------------------------------
 
+from core.utils import LOG_DIR
+
+# --- Phase 19: Environment-Aware Paths ---
 app = FastAPI(title="AI-RMF Sentry Proxy")
-LOG_PATH = Path("workspace/logs/sentry_violations.jsonl")
+LOG_PATH = LOG_DIR / "sentry_violations.jsonl"
 
 def log_violation(entry):
     LOG_PATH.parent.mkdir(parents=True, exist_ok=True)

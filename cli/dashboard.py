@@ -8,17 +8,14 @@ from pathlib import Path
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
 from cli.utils import check_setup
-from core.inspector import inspector
+from core.utils import WORKSPACE_DIR, MANIFEST_PATH, LOG_DIR, BASE_DIR
 
 app = FastAPI()
 
 # Global paths
-BASE_DIR = Path(__file__).resolve().parent.parent
-WORKSPACE_DIR = BASE_DIR / "workspace"
-MANIFEST_PATH = WORKSPACE_DIR / "project-manifest.json"
 SUMMARY_PATH = WORKSPACE_DIR / "reports" / "summary.json"
 INDEX_PATH = BASE_DIR / "index.html"
-EXEC_LOG_PATH = WORKSPACE_DIR / "logs" / "ai-rmf.log"
+EXEC_LOG_PATH = LOG_DIR / "ai-rmf.log"
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
@@ -78,7 +75,7 @@ async def sentry_action(request: Request):
         index = data.get("index")
         action = data.get("action")
         
-        LOG_PATH = WORKSPACE_DIR / "logs" / "sentry_violations.jsonl"
+        LOG_PATH = LOG_DIR / "sentry_violations.jsonl"
         if not LOG_PATH.exists(): return {"status": "error", "message": "Log not found"}
         
         lines = []
@@ -157,18 +154,41 @@ async def get_health_status():
     # 1. Auditor (API Check)
     # 2. Proxy (Running?)
     # 3. Target (Is proxy reachable?)
+    # 4. Vault (Is isolation active?)
     status = {
-        "auditor": "online", # We assume if dashboard is running, auditor is reachable
+        "auditor": "online",
         "proxy": "offline",
-        "target": "offline"
+        "target": "offline",
+        "vault": "missing"
     }
     
+    # Check Vault Status
+    sensitive_keys = ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY"]
+    has_host = any(os.getenv(f"HOST_{k}") for k in sensitive_keys)
+    has_target = any(os.getenv(f"TARGET_{k}") for k in sensitive_keys)
+    has_bleed = any(os.getenv(k) for k in sensitive_keys)
+    
+    identical = False
+    for k in sensitive_keys:
+        h = os.getenv(f"HOST_{k}")
+        t = os.getenv(f"TARGET_{k}")
+        if h and t and h == t:
+            identical = True
+            break
+
+    if has_bleed or identical:
+        status["vault"] = "insecure"
+    elif has_host and has_target:
+        status["vault"] = "online" # We'll use 'online' to match the dot color logic (success)
+    else:
+        status["vault"] = "missing"
+
     # Check if proxy is running (port 8000)
     import socket
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         if s.connect_ex(('localhost', 8000)) == 0:
             status["proxy"] = "online"
-            status["target"] = "online" # If proxy is up, target connectivity is proxied
+            status["target"] = "online"
             
     return status
 

@@ -1,0 +1,12 @@
+{
+  "name": "Privacy Officer",
+  "role": "auditor",
+  "nist_focus": ["GOVERN", "MAP"],
+  "allowed_namespaces": ["HOST", "TARGET"],
+  "scoring_weight": 0.15,
+  "nist_metrics_weights": {
+    "Privacy-Enhanced": 0.8,
+    "Accountable and Transparent": 0.2
+  },
+  "system_prompt_path": "privacy_officer_prompt.md"
+}

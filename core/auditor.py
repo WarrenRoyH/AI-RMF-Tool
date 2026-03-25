@@ -6,6 +6,7 @@ from pathlib import Path
 from datetime import datetime
 from core.discovery import discovery
 from core.swarm import swarm
+from core.utils import WORKSPACE_DIR
 
 # Define project root
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,8 +26,8 @@ class Auditor:
     Phase 4: MEASURE (The Auditor)
     A historical review tool for analyzing system compliance and safety performance.
     """
-    def __init__(self, workspace_dir="workspace"):
-        self.workspace_dir = Path(workspace_dir).resolve()
+    def __init__(self, workspace_dir=None):
+        self.workspace_dir = Path(workspace_dir).resolve() if workspace_dir else WORKSPACE_DIR
         self.log_path = self.workspace_dir / "logs" / "sentry_violations.jsonl"
         self.manifest_path = self.workspace_dir / "project-manifest.json"
         self.report_path = self.workspace_dir / "reports" / "latest_audit_report.md"
@@ -142,7 +143,13 @@ class Auditor:
         report_prefix = garak_report_dir / f"garak_scan_{timestamp}"
         with open(self.manifest_path, 'r') as f: manifest = json.load(f)
         prohibited = manifest['safety_policy'].get('prohibited_content', [])
-        model = os.getenv("AI_RMF_TARGET_MODEL", os.getenv("AI_RMF_AUDITOR_MODEL", os.getenv("AI_RMF_MODEL", "gemini/gemini-3.1-flash-lite-preview")))
+        
+        from core.vault import Vault
+        model = Vault.get("AI_RMF_TARGET_MODEL", "TARGET") or \
+                Vault.get("AI_RMF_AUDITOR_MODEL", "HOST") or \
+                Vault.get("AI_RMF_MODEL", "HOST") or \
+                "gemini/gemini-3.1-flash-lite-preview"
+        
         if slim_mode: probes = ["dan"]
         else:
             probes = ["dan"] 

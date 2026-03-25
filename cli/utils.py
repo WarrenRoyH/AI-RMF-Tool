@@ -4,10 +4,12 @@ import sys
 from pathlib import Path
 from core.provider import provider
 
-WORKSPACE_DIR = Path("workspace")
+WORKSPACE_DIR = Path(os.environ.get("AI_RMF_WORKSPACE", "workspace")).resolve()
 MANIFEST_PATH = WORKSPACE_DIR / "project-manifest.json"
-LIBRARIAN_PROMPT_PATH = Path("librarian/prompt.md")
-ADVERSARY_PROMPT_PATH = Path("librarian/adversary_prompt.md")
+BASE_DIR = Path(__file__).resolve().parent.parent
+LIBRARIAN_PROMPT_PATH = BASE_DIR / "librarian" / "prompt.md"
+ADVERSARY_PROMPT_PATH = BASE_DIR / "librarian" / "adversary_prompt.md"
+REPORT_DIR = WORKSPACE_DIR / "reports"
 
 def check_setup():
     """Ensure workspace exists and environment is configured."""

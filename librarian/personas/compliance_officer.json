@@ -1,0 +1,8 @@
+{
+  "name": "Compliance Officer",
+  "role": "auditor",
+  "nist_focus": ["MEASURE", "MANAGE"],
+  "allowed_namespaces": ["HOST", "TARGET"],
+  "scoring_weight": 0.25,
+  "system_prompt_path": "compliance_officer_prompt.md"
+}

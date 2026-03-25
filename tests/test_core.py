@@ -47,7 +47,7 @@ def test_sentry_initialization():
 
 def test_provider_model_selection():
     """Verify provider maps models correctly."""
-    with patch.dict(os.environ, {"AI_RMF_AUDITOR_MODEL": "gemini-3.1-pro"}):
+    with patch.dict(os.environ, {"HOST_AI_RMF_AUDITOR_MODEL": "gemini-3.1-pro"}):
         from core.provider import LLMProvider
         p = LLMProvider()
         assert "gemini" in p.model.lower()
@@ -180,9 +180,9 @@ def test_sentry_load_policy_high_risk():
                 status = custom_sentry.get_status()
                 assert "Bias" in status["output_scanners"]
                 assert "Anonymize" in status["input_scanners"]
-@patch('core.sentry.os.getenv', return_value="fake_key")
+@patch('core.vault.Vault.get', return_value="fake_key")
 @patch('resend.Emails.send')
-def test_sentry_send_notification(mock_resend_send, mock_getenv):
+def test_sentry_send_notification(mock_resend_send, mock_vault_get):
     """Verify Sentry sends notifications on violation."""
     log_entry = {
         "type": "input_violation",
@@ -192,6 +192,7 @@ def test_sentry_send_notification(mock_resend_send, mock_getenv):
     }
     sentry.send_notification(log_entry)
     mock_resend_send.assert_called_once()
+    mock_vault_get.assert_called_with("RESEND_API_KEY", "HOST")
 
 def test_sentry_log_violation():
     """Verify Sentry logs violations to file."""

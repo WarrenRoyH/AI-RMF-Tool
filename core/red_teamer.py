@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from core.provider import provider
 from core.jailbreak_engine import jailbreak_engine
+from core.utils import WORKSPACE_DIR
 from librarian.data_factory import DataFactory
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,8 +13,8 @@ class RedTeamer:
     Phase 2: MAP -> Phase 4: MEASURE (The Red Teamer)
     Expert persona for automated security stress-testing.
     """
-    def __init__(self, workspace_dir="workspace"):
-        self.workspace_dir = Path(workspace_dir).resolve()
+    def __init__(self, workspace_dir=None):
+        self.workspace_dir = Path(workspace_dir).resolve() if workspace_dir else WORKSPACE_DIR
         self.manifest_path = self.workspace_dir / "project-manifest.json"
         self.prompt_path = BASE_DIR / "librarian" / "red_teamer_prompt.md"
         self.data_factory = DataFactory(output_dir=str(self.workspace_dir / "data"))

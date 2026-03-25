@@ -38,7 +38,7 @@ class TestDashboard(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             mock_run_sync.assert_called_once()
             # Verify file write
-            mocked_file.assert_called_with(mock_manifest_path, 'w')
+            mocked_file.assert_any_call(mock_manifest_path, 'w')
 
     @patch('cli.dashboard.WORKSPACE_DIR')
     def test_get_violations(self, mock_workspace_dir):

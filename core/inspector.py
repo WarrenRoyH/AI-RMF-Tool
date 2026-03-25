@@ -3,14 +3,15 @@ import sys
 import subprocess
 import time
 from pathlib import Path
+from core.utils import WORKSPACE_DIR
 
 class Inspector:
     """
     Phase 4: MEASURE (The Inspector)
     Provides continuous monitoring and observability using Arize Phoenix.
     """
-    def __init__(self, workspace_dir="workspace"):
-        self.workspace_dir = Path(workspace_dir)
+    def __init__(self, workspace_dir=None):
+        self.workspace_dir = Path(workspace_dir).resolve() if workspace_dir else WORKSPACE_DIR
         self.log_dir = self.workspace_dir / "logs"
         self.port = 6006 # Default Phoenix port
 

@@ -5,11 +5,53 @@ from cli.utils import check_setup, WORKSPACE_DIR
 from core.provider import provider
 from core.sentry import sentry
 
+def check_key_bleed():
+    """
+    Zero-Trust 'Key Bleed' Detector (AC3).
+    Scans for un-prefixed sensitive keys and validates environment isolation.
+    """
+    print("\n[STEP 0]: Zero-Trust 'Key Bleed' Detector (AC3)")
+    print("-" * 40)
+    
+    sensitive_keys = [
+        "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY",
+        "MISTRAL_API_KEY", "COHERE_API_KEY", "ANYSCALE_API_KEY",
+        "AI_RMF_MODEL", "AI_RMF_TARGET_MODEL"
+    ]
+    
+    bleed_found = False
+    for key in sensitive_keys:
+        if os.getenv(key):
+            print(f"[!] BLEED DETECTED: Un-prefixed sensitive key found: {key}")
+            print(f"    ACTION: Move this key to HOST_{key} or TARGET_{key} in your .env file.")
+            bleed_found = True
+            
+    # Check for Host/Target isolation redundancy
+    for key in sensitive_keys:
+        host_val = os.getenv(f"HOST_{key}")
+        target_val = os.getenv(f"TARGET_{key}")
+        
+        if host_val and target_val and host_val == target_val:
+            print(f"[!] WARNING: HOST_{key} and TARGET_{key} are identical.")
+            print(f"    Redundant or potentially insecure configuration. Ensure isolation.")
+            
+    if not bleed_found:
+        print("[SUCCESS]: No un-prefixed sensitive keys detected in environment.")
+    else:
+        print("[FAIL]: Environment isolation violated. Please secure your credentials.")
+    
+    print("-" * 40)
+    return not bleed_found
+
 def run_verify():
     check_setup()
     print("\n" + "="*60)
     print("--> Phase 7: VERIFY (The Auditor)")
     print("="*60)
+    
+    # AC3: Zero-Trust Key Bleed Detector
+    if not check_key_bleed():
+        print("[!] Warning: Verification continuing despite environment isolation failure.")
     
     manifest_path = WORKSPACE_DIR / "project-manifest.json"
     if not manifest_path.exists():

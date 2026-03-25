@@ -20,9 +20,9 @@ if str(BASE_DIR) not in sys.path:
     sys.path.append(str(BASE_DIR))
 
 from core.provider import provider
+from core.utils import MANIFEST_PATH
 
 # --- Load Manifest for Full Context Grounding ---
-MANIFEST_PATH = BASE_DIR / "workspace" / "project-manifest.json"
 grounding_msg = "You are a helpful assistant. Provide accurate and safe responses."
 if MANIFEST_PATH.exists():
     try:
@@ -52,7 +52,7 @@ if MANIFEST_PATH.exists():
             # 4. Benchmarks
             benchmarks = manifest.get('benchmarks', {})
             if benchmarks:
-                grounding_parts.append(f"GOAL: Your target accuracy for benchmarks is {benchmarks.get('target_accuracy', '0.9')*100}%.")
+                grounding_parts.append(f"GOAL: Your target accuracy for benchmarks is {float(benchmarks.get('target_accuracy', 0.9))*100}%.")
 
             grounding_msg = " ".join(grounding_parts)
     except Exception as e:

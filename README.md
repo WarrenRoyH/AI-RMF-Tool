@@ -51,6 +51,12 @@ To ensure agents cannot access sensitive host data, the toolkit utilizes OS-nati
 *   **macOS:** Uses `sandbox-exec` with custom security profiles.
 *   **Cloud/On-Prem:** Fully compatible with unprivileged environments (no `sudo` required).
 
+### Zero-Trust Vault Isolation
+The toolkit implements a mandatory **Zero-Trust credential management** system via `core/vault.py`:
+*   **Namespace Isolation:** Credentials are prefixed with `HOST_` (for the Auditor/Infrastructure) or `TARGET_` (for the System Under Test).
+*   **Prevention of Credential Bleed:** The Vault interface ensures that sensitive "Host" API keys are never accessible to adapters interacting with potentially compromised or untrusted "Target" models.
+*   **Key Bleed Detection:** The `ai-rmf verify` command includes a dedicated detector to flag un-prefixed or redundant credentials in the environment.
+
 ### High-Level Blueprint
 ```text
 ai-rmf-tools/

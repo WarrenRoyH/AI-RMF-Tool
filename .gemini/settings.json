@@ -1,0 +1,11 @@
+{
+  "skills": {
+    "disabled": [
+      "ai-rmf-optimizer",
+      "ai-rmf-pm",
+      "ai-rmf-architect",
+      "ai-rmf-developer",
+      "ai-rmf-qa"
+    ]
+  }
+}

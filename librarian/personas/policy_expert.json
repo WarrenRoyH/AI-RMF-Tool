@@ -1,0 +1,8 @@
+{
+  "name": "Policy Expert",
+  "role": "auditor",
+  "nist_focus": ["GOVERN", "MAP"],
+  "allowed_namespaces": ["HOST", "TARGET"],
+  "scoring_weight": 0.25,
+  "system_prompt_path": "policy_expert_prompt.md"
+}
