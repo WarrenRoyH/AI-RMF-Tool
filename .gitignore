@@ -11,7 +11,7 @@ __pycache__/
 ROADMAP.md
 runner.py
 GEMINI.md
-.gemini/skills/
+.gemini/
 scripts/
 
 # OS artifacts
