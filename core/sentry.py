@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 
 try:
+    from llm_guard import scan_prompt, scan_output
     from llm_guard.input_scanners import PromptInjection, Secrets, Anonymize
     # Map PII to Anonymize for backward compatibility in the class below
     PII = Anonymize
