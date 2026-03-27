@@ -4,7 +4,9 @@ import logging
 from pathlib import Path
 
 try:
-    from llm_guard.input_scanners import PromptInjection, PII, Secrets, Anonymize
+    from llm_guard.input_scanners import PromptInjection, Secrets, Anonymize
+    # Map PII to Anonymize for backward compatibility in the class below
+    PII = Anonymize
     from llm_guard.output_scanners import (
         Deanonymize, NoRefusal, Relevance, Sensitive,
         Toxicity as OutputToxicity, Bias, BanSubstrings as OutputBanSubstrings
@@ -15,11 +17,11 @@ except ImportError as e:
     class PromptInjection: 
         def __init__(self, *args, **kwargs): pass
     class PII: 
-        def __init__(self, *args, **kwargs): pass
+        def __init__(self, vault=None, *args, **kwargs): pass
     class Secrets: 
         def __init__(self, *args, **kwargs): pass
     class Anonymize: 
-        def __init__(self, *args, **kwargs): pass
+        def __init__(self, vault=None, *args, **kwargs): pass
     class Deanonymize: 
         def __init__(self, *args, **kwargs): pass
     class NoRefusal: 
@@ -74,9 +76,9 @@ class Sentry:
         try:
             # Default mandatory scanners (Core NIST AI RMF protections)
             self.input_scanners.append(PromptInjection())
-            self.input_scanners.append(PII())
+            self.input_scanners.append(PII(vault=self.vault))
             self.input_scanners.append(Secrets())
-            self.input_scanners.append(Anonymize()) # Added to match test expectation of >= 4
+            self.input_scanners.append(Anonymize(vault=self.vault)) # Added to match test expectation of >= 4
             
             if not self.manifest_path.exists():
                 logging.warning(f"Manifest not found at {self.manifest_path}. Using default safety policy.")

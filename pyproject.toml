@@ -18,8 +18,8 @@ dependencies = [
 [project.optional-dependencies]
 standard = [
     "garak",
-    "llm-guard",
-    "transformers==4.57.6",
+    "llm-guard==0.3.16",
+    "transformers", # Removed pinned version to resolve conflict with llm-guard
     "tf-keras",
     "pip-audit",
     "spacy",

@@ -19,8 +19,12 @@ class Vault:
             
         prefixed_key = f"{namespace}_{key_name}"
         
-        # Security Boundary: Never fallback across namespaces
+        # Security Boundary: Try prefixed first
         value = os.getenv(prefixed_key)
+        
+        # Backward Compatibility: Fallback to non-prefixed if prefixed is missing
+        if not value:
+            value = os.getenv(key_name)
         
         # Isolation Check: If looking for TARGET and it's missing, ensure we don't return HOST
         # (Though os.getenv(f"TARGET_{key_name}") will only return that specific env var anyway)

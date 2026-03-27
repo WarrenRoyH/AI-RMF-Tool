@@ -1,31 +1,97 @@
 import json
+import re
 from pathlib import Path
 from core.provider import provider
-from core.utils import WORKSPACE_DIR
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DEFAULT_RULES_PATH = BASE_DIR / "config" / "remediation_rules.json"
+
+class RuleRegistry:
+    def __init__(self, rules_path=DEFAULT_RULES_PATH):
+        self.rules_path = Path(rules_path)
+        self.rules = []
+        self.load_rules()
+
+    def load_rules(self):
+        if not self.rules_path.exists():
+            return
+        with open(self.rules_path, 'r') as f:
+            data = json.load(f)
+            self.rules = data.get("rules", [])
+        
+        # Pre-compile regexes
+        for rule in self.rules:
+            trigger = rule.get("trigger", {})
+            if trigger.get("regex"):
+                trigger["_compiled_regex"] = re.compile(trigger["regex"])
+
+    def apply_rules(self, text, target, category=None, risk_score=0):
+        """
+        Applies rules to the text based on target (input/output), category, and risk_score.
+        Returns a dict: {"action": "allow"|"block"|"mask"|"route", "modified_text": text, "route_to": None, "reason": None}
+        """
+        for rule in self.rules:
+            if rule.get("target") != target:
+                continue
+                
+            trigger = rule.get("trigger", {})
+            match = False
+            
+            # Check conditions based on trigger schema
+            cat_match = False
+            if trigger.get("category") and trigger.get("category") == category:
+                if risk_score >= trigger.get("min_score", 0):
+                    cat_match = True
+            
+            regex_match = False
+            if trigger.get("_compiled_regex"):
+                if trigger["_compiled_regex"].search(text):
+                    regex_match = True
+                    
+            # If any condition matches, apply the rule
+            # Assuming OR condition between category matching and regex matching
+            if cat_match or regex_match:
+                action = rule.get("action")
+                result = {
+                    "action": action,
+                    "modified_text": text,
+                    "route_to": rule.get("route_to"),
+                    "reason": rule.get("reason")
+                }
+                
+                if action == "mask":
+                    if trigger.get("_compiled_regex"):
+                        result["modified_text"] = trigger["_compiled_regex"].sub("[MASKED]", text)
+                    else:
+                        result["modified_text"] = "[MASKED_PII]"
+                        
+                return result
+                
+        return {"action": "allow", "modified_text": text, "route_to": None, "reason": None}
 
 class Remediator:
-    """
-    Phase 4: MEASURE -> Phase 3: MANAGE (Auto-Remediation)
-    Uses an LLM to suggest prompt patches based on security failures.
-    """
-    def __init__(self, workspace_dir=None):
+    def __init__(self, rules_path=DEFAULT_RULES_PATH, workspace_dir=None):
+        self.registry = RuleRegistry(rules_path=rules_path)
+        from core.utils import WORKSPACE_DIR
         self.workspace_dir = Path(workspace_dir).resolve() if workspace_dir else WORKSPACE_DIR
         self.manifest_path = self.workspace_dir / "project-manifest.json"
+        
+    def process_input(self, text, category=None, risk_score=0):
+        return self.registry.apply_rules(text, "input", category, risk_score)
+        
+    def process_output(self, text, category=None, risk_score=0):
+        return self.registry.apply_rules(text, "output", category, risk_score)
 
     def suggest_patch(self, failure_report_path):
-        """
-        Analyzes a failure report (e.g., Garak or Sentry logs) 
-        and suggests a system prompt patch.
-        """
+        import json
+        import re
         report_path = Path(failure_report_path)
         if not report_path.exists():
             return "Error: Failure report not found."
 
-        # Load the report content (truncated if too large)
         with open(report_path, 'r') as f:
-            report_content = f.read()[-2000:] # Last 2000 chars
+            report_content = f.read()[-2000:]
 
-        # Load the manifest for context
         if self.manifest_path.exists():
             with open(self.manifest_path, 'r') as f:
                 manifest = json.load(f)
@@ -48,8 +114,6 @@ Ensure the patch is concise and direct. Output ONLY the suggested prompt snippet
             with open(patch_path, 'w') as f:
                 f.write(f"# Suggested Remediation Patch\n\n{response}")
             
-            # Extract the raw snippet for direct application
-            import re
             match = re.search(r"```(?:markdown|text|)\n(.*?)\n```", response, re.DOTALL)
             if match:
                 snippet = match.group(1).strip()
@@ -60,9 +124,7 @@ Ensure the patch is concise and direct. Output ONLY the suggested prompt snippet
         return "Error: Could not generate remediation patch."
 
     def apply_patch(self):
-        """
-        Applies the suggested patch to the project-manifest.json.
-        """
+        import json
         raw_patch_path = self.workspace_dir / "reports" / "suggested_patch_raw.txt"
         if not raw_patch_path.exists():
             return "Error: No raw patch found to apply."
@@ -75,14 +137,10 @@ Ensure the patch is concise and direct. Output ONLY the suggested prompt snippet
         with open(self.manifest_path, 'r') as f:
             manifest = json.load(f)
 
-        # Update the system_prompt or a dedicated safety_prompt field
         if 'safety_policy' not in manifest:
             manifest['safety_policy'] = {}
         
         manifest['safety_policy']['hardened_prompt'] = snippet
-        
-        # Also append to prohibited_content if it's a list and we can extract rules
-        # (This is more complex, for now we just store the hardened prompt)
 
         with open(self.manifest_path, 'w') as f:
             json.dump(manifest, f, indent=4)

@@ -65,6 +65,8 @@ class APIAdapter(BaseAdapter):
         except Exception as e:
             err_msg = str(e)
             if "429" in err_msg or "rate_limit" in err_msg.lower() or "quota" in err_msg.lower():
+                # Print a clear message for runner.py to catch
+                print(f"--- [CRITICAL] RATE_LIMIT_REACHED: {self.model} ---", file=sys.stderr)
                 raise QuotaExceededError(f"Quota reached for {self.model}: {err_msg}")
             return f"API Error: {err_msg}"
 

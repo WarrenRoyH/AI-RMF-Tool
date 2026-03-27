@@ -28,6 +28,8 @@ class Tee(object):
     def flush(self):
         for f in self.files:
             f.flush()
+    def isatty(self):
+        return False
 
 def setup_execution_logging(mode='a'):
     log_dir = Path("workspace/logs")

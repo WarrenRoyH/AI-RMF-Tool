@@ -1,0 +1,38 @@
+{
+  "rules": [
+    {
+      "id": "R001-TOXIC-INPUT",
+      "trigger": {
+        "category": "toxic",
+        "min_score": 85,
+        "regex": null
+      },
+      "action": "block",
+      "target": "input",
+      "reason": "NIST AI RMF Manage 4.1: Block toxic input to prevent jailbreak."
+    },
+    {
+      "id": "R002-PII-OUTPUT",
+      "trigger": {
+        "category": "pii",
+        "min_score": 70,
+        "regex": null
+      },
+      "action": "mask",
+      "target": "output",
+      "reason": "NIST AI RMF Manage 4.1: Redact sensitive PII in model responses."
+    },
+    {
+      "id": "R003-BYPASS-ROUTING",
+      "trigger": {
+        "category": "jailbreak_intent",
+        "min_score": 90,
+        "regex": "(?i)(ignore previous instructions|DAN mode)"
+      },
+      "action": "route",
+      "target": "input",
+      "route_to": "safety-model-v1",
+      "reason": "NIST AI RMF Manage 4.1: Redirect suspicious intent to a hardened safety model."
+    }
+  ]
+}
