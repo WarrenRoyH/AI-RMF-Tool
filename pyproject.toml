@@ -4,11 +4,11 @@ version = "0.1.0"
 description = "NIST AI RMF 1.0 Implementation Toolkit"
 readme = "README.md"
 authors = [{ name = "WarrenRoyH" }]
-requires-python = ">=3.11"
+requires-python = "==3.11.*"
 dependencies = [
     "python-dotenv",
     "questionary",
-    "litellm",
+    "litellm>=1.83.0",
     "pydantic",
     "psutil",
     "numpy==2.2.3",
@@ -17,9 +17,8 @@ dependencies = [
 
 [project.optional-dependencies]
 standard = [
-    "garak",
-    "llm-guard==0.3.16",
-    "transformers", # Removed pinned version to resolve conflict with llm-guard
+    "garak>=0.14.0",
+    "transformers",
     "tf-keras",
     "pip-audit",
     "spacy",
@@ -40,3 +39,4 @@ middleware = [
 [tool.uv]
 managed = true
 package = false
+environments = ["sys_platform == 'linux'"]
